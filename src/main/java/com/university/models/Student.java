@@ -1,6 +1,6 @@
 package com.university.models;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Student Entity Class
@@ -13,15 +13,15 @@ public class Student {
     private String name;             // Full name
     private String email;            // Email address (unique)
     private String phone;            // Phone number
-    private LocalDate dateOfBirth;   // Date of birth
+    private LocalDateTime dateOfBirth;   // Date of birth
     private String gender;           // Male/Female/Other
     private int deptId;              // Foreign Key to Department
     private String password;         // Login password
-    private LocalDate admissionDate; // Admission date
+    private LocalDateTime admissionDate; // Admission date
     private int semester;            // Current semester
     private String status;           // Active/Inactive/Graduated
     private double cgpa;             // Cumulative GPA
-    private LocalDate createdAt;     // Record creation timestamp
+    private LocalDateTime createdAt;     // Record creation timestamp
 
     // ==================== CONSTRUCTORS ====================
 
@@ -35,7 +35,7 @@ public class Student {
      * Constructor with main fields
      * Used when creating basic student info
      */
-    public Student(String rollNumber, String name, String email, int deptId, LocalDate admissionDate) {
+    public Student(String rollNumber, String name, String email, int deptId, LocalDateTime admissionDate) {
         this.rollNumber = rollNumber;
         this.name = name;
         this.email = email;
@@ -48,8 +48,8 @@ public class Student {
      * Used when loading complete student data from database
      */
     public Student(int studentId, String rollNumber, String name, String email, String phone,
-                   LocalDate dateOfBirth, String gender, int deptId, String password,
-                   LocalDate admissionDate, int semester, String status, double cgpa, LocalDate createdAt) {
+                   LocalDateTime dateOfBirth, String gender, int deptId, String password,
+                   LocalDateTime admissionDate, int semester, String status, double cgpa, LocalDateTime createdAt) {
         this.studentId = studentId;
         this.rollNumber = rollNumber;
         this.name = name;
@@ -108,11 +108,11 @@ public class Student {
         this.phone = phone;
     }
 
-    public LocalDate getDateOfBirth() {
+    public LocalDateTime getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(LocalDate dateOfBirth) {
+    public void setDateOfBirth(LocalDateTime dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 
@@ -140,11 +140,11 @@ public class Student {
         this.password = password;
     }
 
-    public LocalDate getAdmissionDate() {
+    public LocalDateTime getAdmissionDate() {
         return admissionDate;
     }
 
-    public void setAdmissionDate(LocalDate admissionDate) {
+    public void setAdmissionDate(LocalDateTime admissionDate) {
         this.admissionDate = admissionDate;
     }
 
@@ -172,11 +172,11 @@ public class Student {
         this.cgpa = cgpa;
     }
 
-    public LocalDate getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDate createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
