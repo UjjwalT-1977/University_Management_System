@@ -1,0 +1,7 @@
+*.class
+*.jar
+/bin/
+.idea/
+*.iml
+db.properties 
+.vscode/

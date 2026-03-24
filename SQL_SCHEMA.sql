@@ -99,7 +99,7 @@ CREATE TABLE enrollment (
     enrollment_id INT PRIMARY KEY AUTO_INCREMENT,
     student_id INT NOT NULL,
     course_id INT NOT NULL,
-    enrollment_date DATE DEFAULT CURRENT_DATE,
+    enrollment_date DATE DEFAULT (CURDATE()),
     cgpa_at_enrollment DECIMAL(3,2),
     status ENUM('Enrolled', 'Dropped', 'Completed') DEFAULT 'Enrolled',
     UNIQUE KEY unique_enrollment (student_id, course_id),
