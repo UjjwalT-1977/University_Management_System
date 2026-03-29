@@ -38,20 +38,20 @@ public class DatabaseConfig {
         try {
             Class.forName(DB_DRIVER);
         } catch (ClassNotFoundException e) {
-            System.err.println("Database driver not found: " + e.getMessage());
+            System.err.println("Database driver not found: " + e.getMessage()) ;
         }
     }
     
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD) ;
     }
     
     public static void closeConnection(Connection conn) {
         if (conn != null) {
             try {
-                conn.close();
+                conn.close() ;
             } catch (SQLException e) {
-                System.err.println("Error closing connection: " + e.getMessage());
+                System.err.println("Error closing connection: " + e.getMessage()) ;
             }
         }
     }

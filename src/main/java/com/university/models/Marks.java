@@ -87,11 +87,11 @@ public class Marks {
     public void setExternalMarks(double externalMarks) {
         this.externalMarks = externalMarks;
     }
-
+      
     public double getTotalMarks() {
-        return totalMarks;
+        return totalMarks ;
     }
-
+      
     public void setTotalMarks(double totalMarks) {
         this.totalMarks = totalMarks;
     }
