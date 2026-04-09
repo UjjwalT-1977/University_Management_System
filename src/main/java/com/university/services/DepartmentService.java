@@ -2,17 +2,25 @@ package com.university.services;
 
 import com.university.dao.DepartmentDAO;
 import com.university.models.Department;
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * Business Logic Layer for Department Operations
+ * Business Logic Layer for Department Management
  */
+@Service
 public class DepartmentService {
 
     private final DepartmentDAO departmentDAO;
     private static final Logger logger = Logger.getLogger(DepartmentService.class.getName());
+
+    @Autowired
+    public DepartmentService(DepartmentDAO departmentDAO) {
+        this.departmentDAO = departmentDAO;
+    }
 
     public DepartmentService() {
         this.departmentDAO = new DepartmentDAO();

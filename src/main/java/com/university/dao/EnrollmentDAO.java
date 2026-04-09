@@ -2,6 +2,7 @@ package com.university.dao;
 
 import com.university.models.Enrollment;
 import com.university.config.DatabaseConfig;
+import org.springframework.stereotype.Repository;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
  * EnrollmentDAO - Data Access Object for Enrollment Entity
  * Handles student enrollments in courses
  */
+@Repository
 public class EnrollmentDAO {
 
     public boolean addEnrollment(Enrollment enrollment) {
@@ -154,6 +156,25 @@ public class EnrollmentDAO {
         }
         
         return false;
+    }
+
+    public List<Enrollment> getAllEnrollments() {
+        List<Enrollment> enrollments = new ArrayList<>();
+        String sql = "SELECT * FROM enrollment ORDER BY enrollment_date DESC";
+        
+        try (Connection conn = DatabaseConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                enrollments.add(extractEnrollmentFromResultSet(rs));
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Get All Enrollments Error: " + e.getMessage());
+        }
+        
+        return enrollments;
     }
 
     private Enrollment extractEnrollmentFromResultSet(ResultSet rs) throws SQLException {

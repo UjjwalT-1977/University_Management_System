@@ -3,12 +3,15 @@ package com.university.services;
 import com.university.dao.CourseDAO;
 import com.university.dao.FacultyDAO;
 import com.university.models.Course;
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.logging.Logger;
 
 /**
  * Business Logic Layer for Academic Course Operations
  */
+@Service
 public class CourseService {
 
     private final CourseDAO courseDAO;
@@ -16,9 +19,10 @@ public class CourseService {
     
     private static final Logger logger = Logger.getLogger(CourseService.class.getName());
 
-    public CourseService() {
-        this.courseDAO = new CourseDAO();
-        this.facultyDAO = new FacultyDAO();
+    @Autowired
+    public CourseService(CourseDAO courseDAO, FacultyDAO facultyDAO) {
+        this.courseDAO = courseDAO;
+        this.facultyDAO = facultyDAO;
     }
 
     /**
@@ -153,7 +157,63 @@ public class CourseService {
         if (success) {
             logger.info("Successfully assigned Faculty ID " + facultyId + " to Course ID " + courseId);
         }
-        
+
         return success;
+    }
+
+    // ==================== NEW METHODS FOR REST API ====================
+
+    /**
+     * Add new course (alias for createCourse)
+     */
+    public boolean addCourse(Course course) {
+        return createCourse(course);
+    }
+
+    /**
+     * Get course by ID (alias for getCourseDetails)
+     */
+    public Course getCourseById(int courseId) {
+        return getCourseDetails(courseId);
+    }
+
+    /**
+     * Get all courses in the system
+     */
+    public java.util.List<Course> getAllCourses() {
+        logger.info("Fetching all courses");
+        return courseDAO.getAllCourses();
+    }
+
+    /**
+     * Get courses by department
+     */
+    public java.util.List<Course> getCoursesByDepartment(int deptId) {
+        logger.info("Fetching courses for Department ID: " + deptId);
+        return courseDAO.getCoursesByDepartment(deptId);
+    }
+
+    /**
+     * Get courses by faculty
+     */
+    public java.util.List<Course> getCoursesByFaculty(int facultyId) {
+        logger.info("Fetching courses for Faculty ID: " + facultyId);
+        return courseDAO.getCoursesByFaculty(facultyId);
+    }
+
+    /**
+     * Get course by course code
+     */
+    public Course getCourseByCode(String courseCode) {
+        logger.info("Fetching course with code: " + courseCode);
+        return courseDAO.getCourseByCourseCode(courseCode);
+    }
+
+    /**
+     * Update course by ID
+     */
+    public boolean updateCourse(int courseId, Course course) {
+        course.setCourseId(courseId);
+        return updateCourse(course);
     }
 }

@@ -6,12 +6,15 @@ import com.university.dao.FacultyDAO;
 import com.university.models.Admin;
 import com.university.models.Student;
 import com.university.models.Faculty;
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.logging.Logger;
 
 /**
  * Business Logic Layer for Authentication and Security
  */
+@Service
 public class AuthService {
 
     private final AdminDAO adminDAO;
@@ -20,10 +23,11 @@ public class AuthService {
     
     private static final Logger logger = Logger.getLogger(AuthService.class.getName());
 
-    public AuthService() {
-        this.adminDAO = new AdminDAO();
-        this.studentDAO = new StudentDAO();
-        this.facultyDAO = new FacultyDAO();
+    @Autowired
+    public AuthService(AdminDAO adminDAO, StudentDAO studentDAO, FacultyDAO facultyDAO) {
+        this.adminDAO = adminDAO;
+        this.studentDAO = studentDAO;
+        this.facultyDAO = facultyDAO;
     }
 
     /**

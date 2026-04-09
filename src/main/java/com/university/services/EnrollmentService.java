@@ -6,6 +6,8 @@ import com.university.dao.CourseDAO;
 import com.university.models.Enrollment;
 import com.university.models.Course;
 import com.university.models.Student;
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.logging.Logger;
 /**
  * Business Logic Layer for Student Enrollments
  */
+@Service
 public class EnrollmentService {
 
     private final EnrollmentDAO enrollmentDAO;
@@ -22,10 +25,11 @@ public class EnrollmentService {
     
     private static final Logger logger = Logger.getLogger(EnrollmentService.class.getName());
 
-    public EnrollmentService() {
-        this.enrollmentDAO = new EnrollmentDAO();
-        this.studentDAO = new StudentDAO();
-        this.courseDAO = new CourseDAO();
+    @Autowired
+    public EnrollmentService(EnrollmentDAO enrollmentDAO, StudentDAO studentDAO, CourseDAO courseDAO) {
+        this.enrollmentDAO = enrollmentDAO;
+        this.studentDAO = studentDAO;
+        this.courseDAO = courseDAO;
     }
 
     /**
@@ -144,5 +148,108 @@ public class EnrollmentService {
     public List<Enrollment> getEnrolledStudents(int courseId) {
         logger.info("Fetching enrollments for course ID: " + courseId);
         return enrollmentDAO.getEnrollmentsByCourse(courseId);
+    }
+
+    /**
+     * Validate enrollment data from Controller requests
+     */
+    public String validateEnrollmentData(Enrollment enrollment) {
+        if (enrollment == null) {
+            return "Enrollment data cannot be null";
+        }
+        if (enrollment.getStudentId() <= 0) {
+            return "Invalid student ID";
+        }
+        if (enrollment.getCourseId() <= 0) {
+            return "Invalid course ID";
+        }
+        if (enrollment.getStatus() == null || enrollment.getStatus().isEmpty()) {
+            return "Enrollment status cannot be empty";
+        }
+        return null; // Valid
+    }
+
+    /**
+     * Enroll student using Enrollment object (wrapper for enrollStudentInCourse)
+     */
+    public boolean enrollStudent(Enrollment enrollment) {
+        if (enrollment == null) {
+            logger.warning("Enrollment object is null");
+            return false;
+        }
+        return enrollStudentInCourse(enrollment.getStudentId(), enrollment.getCourseId());
+    }
+
+    /**
+     * Get all enrollments for a specific student
+     */
+    public List<Enrollment> getEnrollmentsByStudent(int studentId) {
+        logger.info("Fetching all enrollments for student ID: " + studentId);
+        return enrollmentDAO.getEnrollmentsByStudent(studentId);
+    }
+
+    /**
+     * Get all enrollments for a specific course
+     */
+    public List<Enrollment> getEnrollmentsByCourse(int courseId) {
+        logger.info("Fetching all enrollments for course ID: " + courseId);
+        return enrollmentDAO.getEnrollmentsByCourse(courseId);
+    }
+
+    /**
+     * Get all enrollments in the system (Admin only)
+     */
+    public List<Enrollment> getAllEnrollments() {
+        logger.info("Fetching all enrollments in the system");
+        return enrollmentDAO.getAllEnrollments();
+    }
+
+    /**
+     * Get enrollment by ID
+     */
+    public Enrollment getEnrollmentById(int enrollmentId) {
+        logger.info("Fetching enrollment ID: " + enrollmentId);
+        return enrollmentDAO.getEnrollmentById(enrollmentId);
+    }
+
+    /**
+     * Update enrollment details
+     */
+    public boolean updateEnrollment(int enrollmentId, Enrollment enrollment) {
+        logger.info("Updating enrollment ID: " + enrollmentId);
+        
+        Enrollment existing = enrollmentDAO.getEnrollmentById(enrollmentId);
+        if (existing == null) {
+            logger.warning("Enrollment not found for ID: " + enrollmentId);
+            return false;
+        }
+
+        // Update the enrollment status
+        return enrollmentDAO.updateEnrollmentStatus(enrollmentId, enrollment.getStatus());
+    }
+
+    /**
+     * Delete enrollment record
+     */
+    public boolean deleteEnrollment(int enrollmentId) {
+        logger.info("Deleting enrollment ID: " + enrollmentId);
+        
+        Enrollment enrollment = enrollmentDAO.getEnrollmentById(enrollmentId);
+        if (enrollment == null) {
+            logger.warning("Enrollment not found for ID: " + enrollmentId);
+            return false;
+        }
+
+        boolean success = enrollmentDAO.deleteEnrollment(enrollmentId);
+        
+        if (success) {
+            // Recalculate enrollment count for the course
+            int courseId = enrollment.getCourseId();
+            int updatedCount = enrollmentDAO.getEnrollmentCountForCourse(courseId);
+            courseDAO.updateEnrollmentCount(courseId, updatedCount);
+            logger.info("Successfully deleted enrollment ID: " + enrollmentId);
+        }
+        
+        return success;
     }
 }

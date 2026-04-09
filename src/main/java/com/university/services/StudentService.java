@@ -4,6 +4,8 @@ import com.university.dao.StudentDAO;
 import com.university.dao.MarksDAO;
 import com.university.models.Student;
 import com.university.models.Marks;
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -13,6 +15,7 @@ import java.util.logging.Logger;
 /**
  * Business Logic Layer for Student Operations
  */
+@Service
 public class StudentService {
 
     private final StudentDAO studentDAO;
@@ -20,9 +23,10 @@ public class StudentService {
     
     private static final Logger logger = Logger.getLogger(StudentService.class.getName());
 
-    public StudentService() {
-        this.studentDAO = new StudentDAO();
-        this.marksDAO = new MarksDAO(); // Initialized the MarksDAO
+    @Autowired
+    public StudentService(StudentDAO studentDAO, MarksDAO marksDAO) {
+        this.studentDAO = studentDAO;
+        this.marksDAO = marksDAO;
     }
 
     /**
@@ -96,6 +100,22 @@ public class StudentService {
     }
 
     /**
+     * Get all students in the system
+     */
+    public List<Student> getAllStudents() {
+        logger.info("Fetching all students");
+        return studentDAO.getAllStudents();
+    }
+
+    /**
+     * Get student by roll number
+     */
+    public Student getStudentByRollNumber(String rollNumber) {
+        logger.info("Fetching student with roll number: " + rollNumber);
+        return studentDAO.getStudentByRollNumber(rollNumber);
+    }
+
+    /**
      * Filter active students
      */
     public List<Student> getAllActiveStudents() {
@@ -109,6 +129,14 @@ public class StudentService {
     public List<Student> getStudentsByDept(int deptId) {
         logger.info("Fetching students for Department ID: " + deptId);
         return studentDAO.getStudentsByDepartment(deptId);
+    }
+
+    /**
+     * Delete a student from the system
+     */
+    public boolean deleteStudent(int studentId) {
+        logger.info("Attempting to delete student ID: " + studentId);
+        return studentDAO.deleteStudent(studentId);
     }
 
     /**

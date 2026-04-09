@@ -2,6 +2,7 @@ package com.university.dao;
 
 import com.university.models.Course;
 import com.university.config.DatabaseConfig;
+import org.springframework.stereotype.Repository;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 /**
  * CourseDAO - Data Access Object for Course Entity
  */
+@Repository
 public class CourseDAO {
 
     public boolean addCourse(Course course) {

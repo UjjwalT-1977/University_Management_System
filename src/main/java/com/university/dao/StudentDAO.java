@@ -2,6 +2,7 @@ package com.university.dao;
 
 import com.university.models.Student;
 import com.university.config.DatabaseConfig;
+import org.springframework.stereotype.Repository;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
  * Handles all database operations for student records
  * NOTE: Authentication is handled by Service Layer, not here
  */
+@Repository
 public class StudentDAO {
     
     /**

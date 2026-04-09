@@ -2,8 +2,8 @@ package com.university.dao;
 
 import com.university.models.Faculty;
 import com.university.config.DatabaseConfig;
+import org.springframework.stereotype.Repository;
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +13,7 @@ import java.util.List;
  * CRUD operations (Create, Read, Update, Delete)
  * Authentication logic is handled by Service Layer
  */
+@Repository
 public class FacultyDAO {
 
     // ==================== CREATE OPERATION ====================

@@ -2,8 +2,8 @@ package com.university.dao;
 
 import com.university.models.Attendance;
 import com.university.config.DatabaseConfig;
+import org.springframework.stereotype.Repository;
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,11 +11,17 @@ import java.util.List;
  * AttendanceDAO - Data Access Object for Attendance Entity
  * Handles attendance records for students
  */
+@Repository
 public class AttendanceDAO {
 
     public boolean addAttendance(Attendance attendance) {
         String sql = "INSERT INTO attendance (student_id, course_id, date, status, recorded_by) " +
                      "VALUES (?, ?, ?, ?, ?)";
+        
+        System.out.println("[ATTENDANCE DAO] Adding new attendance - Student: " + attendance.getStudentId() + 
+                         ", Course: " + attendance.getCourseId() + 
+                         ", Date: " + attendance.getDate() + 
+                         ", Status: " + attendance.getStatus());
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -27,10 +33,12 @@ public class AttendanceDAO {
             pstmt.setInt(5, attendance.getRecordedBy());
             
             int rowsAffected = pstmt.executeUpdate();
+            System.out.println("[ATTENDANCE DAO] Rows affected: " + rowsAffected);
             return rowsAffected > 0;
             
         } catch (SQLException e) {
-            System.err.println("Add Attendance Error: " + e.getMessage());
+            System.err.println("[ATTENDANCE DAO] Add Attendance Error: " + e.getMessage());
+            e.printStackTrace();
         }
         
         return false;
@@ -128,6 +136,8 @@ public class AttendanceDAO {
     public boolean updateAttendance(Attendance attendance) {
         String sql = "UPDATE attendance SET status = ? WHERE attendance_id = ?";
         
+        System.out.println("[ATTENDANCE DAO] Updating attendance ID: " + attendance.getAttendanceId() + " with status: " + attendance.getStatus());
+        
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
@@ -135,10 +145,12 @@ public class AttendanceDAO {
             pstmt.setInt(2, attendance.getAttendanceId());
             
             int rowsAffected = pstmt.executeUpdate();
+            System.out.println("[ATTENDANCE DAO] Rows affected: " + rowsAffected);
             return rowsAffected > 0;
             
         } catch (SQLException e) {
-            System.err.println("Update Attendance Error: " + e.getMessage());
+            System.err.println("[ATTENDANCE DAO] Update Attendance Error: " + e.getMessage());
+            e.printStackTrace();
         }
         
         return false;
@@ -160,6 +172,28 @@ public class AttendanceDAO {
         }
         
         return false;
+    }
+
+    public List<Attendance> getAttendanceByStudentAndCourse(int studentId, int courseId) {
+        List<Attendance> attendances = new ArrayList<>();
+        String sql = "SELECT * FROM attendance WHERE student_id = ? AND course_id = ? ORDER BY date DESC";
+        
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, studentId);
+            pstmt.setInt(2, courseId);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                attendances.add(extractAttendanceFromResultSet(rs));
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Get Attendance by Student and Course Error: " + e.getMessage());
+        }
+        
+        return attendances;
     }
 
     private Attendance extractAttendanceFromResultSet(ResultSet rs) throws SQLException {

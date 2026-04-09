@@ -2,6 +2,7 @@ package com.university.dao;
 
 import com.university.models.Department;
 import com.university.config.DatabaseConfig;
+import org.springframework.stereotype.Repository;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 /**
  * DepartmentDAO - Data Access Object for Department Entity
  */
+@Repository
 public class DepartmentDAO {
 
     public boolean addDepartment(Department department) {

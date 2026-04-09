@@ -2,19 +2,24 @@ package com.university.services;
 
 import com.university.dao.AdminDAO;
 import com.university.models.Admin;
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
  * Business Logic Layer for Admin Profile Management
  */
+@Service
 public class AdminService {
 
     private final AdminDAO adminDAO;
     private static final Logger logger = Logger.getLogger(AdminService.class.getName());
 
-    public AdminService() {
-        this.adminDAO = new AdminDAO();
+    @Autowired
+    public AdminService(AdminDAO adminDAO) {
+        this.adminDAO = adminDAO;
     }
 
     /**
@@ -90,5 +95,55 @@ public class AdminService {
         }
         
         return adminDAO.updatePassword(adminId, newPassword);
+    }
+
+    /**
+     * Get admin by ID
+     */
+    public Admin getAdminById(int adminId) {
+        logger.info("Fetching admin with ID: " + adminId);
+        return adminDAO.getAdminById(adminId);
+    }
+
+    /**
+     * Get all admins in the system
+     */
+    public List<Admin> getAllAdmins() {
+        logger.info("Fetching all admins from the system");
+        return adminDAO.getAllAdmins();
+    }
+
+    /**
+     * Update admin profile (email, name, phone)
+     * Note: Username and password are NOT updated here
+     */
+    public boolean updateAdminProfile(Admin admin) {
+        logger.info("Attempting to update admin profile for Admin ID: " + admin.getAdminId());
+        
+        // Validate updated data
+        String validationMsg = validateAdminData(admin);
+        if (!validationMsg.equals("VALID")) {
+            logger.warning("Profile update failed due to validation: " + validationMsg);
+            return false;
+        }
+
+        return adminDAO.updateAdmin(admin);
+    }
+
+    /**
+     * Delete an admin from the system
+     * Business Rule: Cannot delete if it's the last admin
+     */
+    public boolean deleteAdmin(int adminId) {
+        logger.info("Attempting to delete admin with ID: " + adminId);
+        
+        // Business rule: ensure at least one admin remains in the system
+        int adminCount = adminDAO.countAdmins();
+        if (adminCount <= 1) {
+            logger.warning("Cannot delete admin. Must have at least one admin in the system.");
+            return false;
+        }
+
+        return adminDAO.deleteAdmin(adminId);
     }
 }

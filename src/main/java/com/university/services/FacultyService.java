@@ -4,6 +4,8 @@ import com.university.dao.FacultyDAO;
 import com.university.dao.CourseDAO;
 import com.university.models.Faculty;
 import com.university.models.Course;
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -11,6 +13,7 @@ import java.util.logging.Logger;
 /**
  * Business Logic Layer for Faculty Operations
  */
+@Service
 public class FacultyService {
 
     private final FacultyDAO facultyDAO;
@@ -18,10 +21,10 @@ public class FacultyService {
     
     private static final Logger logger = Logger.getLogger(FacultyService.class.getName());
 
-    public FacultyService() {
-        // Initialize the DAOs you provided
-        this.facultyDAO = new FacultyDAO();
-        this.courseDAO = new CourseDAO();
+    @Autowired
+    public FacultyService(FacultyDAO facultyDAO, CourseDAO courseDAO) {
+        this.facultyDAO = facultyDAO;
+        this.courseDAO = courseDAO;
     }
 
     /**
@@ -106,6 +109,38 @@ public class FacultyService {
         logger.info("Fetching all active faculty members");
         // Using the exact method you wrote in FacultyDAO
         return facultyDAO.getActiveFaculty();
+    }
+
+    /**
+     * Get all faculty members in the system
+     */
+    public List<Faculty> getAllFaculty() {
+        logger.info("Fetching all faculty members");
+        return facultyDAO.getAllFaculty();
+    }
+
+    /**
+     * Get faculty by employee ID
+     */
+    public Faculty getFacultyByEmpId(String empId) {
+        logger.info("Fetching faculty with emp ID: " + empId);
+        return facultyDAO.getFacultyByEmpId(empId);
+    }
+
+    /**
+     * Get faculty by department
+     */
+    public List<Faculty> getFacultyByDept(int deptId) {
+        logger.info("Fetching faculty for Department ID: " + deptId);
+        return facultyDAO.getFacultyByDepartment(deptId);
+    }
+
+    /**
+     * Delete a faculty member from the system
+     */
+    public boolean deleteFaculty(int facultyId) {
+        logger.info("Attempting to delete faculty ID: " + facultyId);
+        return facultyDAO.deleteFaculty(facultyId);
     }
 
     /**

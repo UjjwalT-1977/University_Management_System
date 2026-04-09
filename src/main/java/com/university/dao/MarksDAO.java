@@ -2,8 +2,8 @@ package com.university.dao;
 
 import com.university.models.Marks;
 import com.university.config.DatabaseConfig;
+import org.springframework.stereotype.Repository;
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +11,7 @@ import java.util.List;
  * MarksDAO - Data Access Object for Marks Entity
  * Handles student grades and marks management
  */
+@Repository
 public class MarksDAO {
 
     public boolean addMarks(Marks marks) {
@@ -19,6 +20,13 @@ public class MarksDAO {
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            System.out.println("DAO: Inserting marks - Student: " + marks.getStudentId() + 
+                             ", Course: " + marks.getCourseId() + 
+                             ", Internal: " + marks.getInternalMarks() + 
+                             ", External: " + marks.getExternalMarks() +
+                             ", Total: " + marks.getTotalMarks() +
+                             ", Grade: " + marks.getGrade());
             
             pstmt.setInt(1, marks.getStudentId());
             pstmt.setInt(2, marks.getCourseId());
@@ -29,10 +37,12 @@ public class MarksDAO {
             pstmt.setInt(7, marks.getRecordedBy());
             
             int rowsAffected = pstmt.executeUpdate();
+            System.out.println("DAO: Rows affected: " + rowsAffected);
             return rowsAffected > 0;
             
         } catch (SQLException e) {
             System.err.println("Add Marks Error: " + e.getMessage());
+            e.printStackTrace();
         }
         
         return false;
@@ -195,6 +205,12 @@ public class MarksDAO {
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
+            System.out.println("DAO: Updating marks ID " + marks.getMarksId() + 
+                             " - Internal: " + marks.getInternalMarks() + 
+                             ", External: " + marks.getExternalMarks() +
+                             ", Total: " + marks.getTotalMarks() +
+                             ", Grade: " + marks.getGrade());
+            
             pstmt.setDouble(1, marks.getInternalMarks());
             pstmt.setDouble(2, marks.getExternalMarks());
             pstmt.setDouble(3, marks.getTotalMarks());
@@ -202,10 +218,12 @@ public class MarksDAO {
             pstmt.setInt(5, marks.getMarksId());
             
             int rowsAffected = pstmt.executeUpdate();
+            System.out.println("DAO: Update rows affected: " + rowsAffected);
             return rowsAffected > 0;
             
         } catch (SQLException e) {
             System.err.println("Update Marks Error: " + e.getMessage());
+            e.printStackTrace();
         }
         
         return false;
