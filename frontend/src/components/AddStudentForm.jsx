@@ -1,254 +1,156 @@
-import { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
 
-export default function AddStudentForm({ onStudentAdded }) {
-    const [formData, setFormData] = useState({
-        rollNumber: '',
-        name: '',
-        email: '',
-        phone: '',
-        dateOfBirth: '',
-        gender: 'Male',
-        deptId: 1,
-        password: '',
-        admissionDate: '',
-        semester: 1,
-        status: 'Active',
-        cgpa: 0.0
-    });
+const AddStudentForm = ({ onStudentAdded }) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+    address: "",
+  });
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
-    const [messageType, setMessageType] = useState('');
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: name === 'semester' || name === 'deptId' || name === 'cgpa' ? 
-                    (isNaN(value) ? value : parseFloat(value)) : value
-        }));
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setError("");
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage('');
+    try {
+      await axios.post("http://localhost:8080/api/admin/addstudent", formData);
+      setMessage("Student added successfully!");
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        phone: "",
+        address: "",
+      });
 
-        try {
-            const response = await axios.post('http://localhost:8080/api/student/add', formData);
-            
-            if (response.data.status === 'success') {
-                setMessageType('success');
-                setMessage('✓ Student added successfully!');
-                
-                // Reset form
-                setFormData({
-                    rollNumber: '',
-                    name: '',
-                    email: '',
-                    phone: '',
-                    dateOfBirth: '',
-                    gender: 'Male',
-                    deptId: 1,
-                    password: '',
-                    admissionDate: '',
-                    semester: 1,
-                    status: 'Active',
-                    cgpa: 0.0
-                });
+      if (onStudentAdded) {
+        onStudentAdded();
+      }
 
-                // Notify parent component
-                if (onStudentAdded) onStudentAdded();
+      setTimeout(() => {
+        setMessage("");
+      }, 3000);
+    } catch (err) {
+      setError(err.response?.data || "Error adding student.");
+    }
+  };
 
-                // Clear success message after 3 seconds
-                setTimeout(() => setMessage(''), 3000);
-            }
-        } catch (error) {
-            console.error('❌ Add Student Error:', error);
-            console.error('Error Details:', error.response?.data || error.message);
-            setMessageType('error');
-            const errorMsg = error.response?.data?.message || error.message || 'Failed to add student';
-            setMessage('✗ ' + errorMsg);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
-            <h2>Add New Student</h2>
-
-            {message && (
-                <div style={{
-                    padding: '12px',
-                    backgroundColor: messageType === 'success' ? '#d4edda' : '#f8d7da',
-                    color: messageType === 'success' ? '#155724' : '#721c24',
-                    borderRadius: '4px',
-                    marginBottom: '20px'
-                }}>
-                    {message}
-                </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Roll Number *</label>
-                    <input
-                        type="text"
-                        name="rollNumber"
-                        value={formData.rollNumber}
-                        onChange={handleChange}
-                        required
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                        placeholder="e.g., CSE001"
-                    />
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Name *</label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                    />
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Email *</label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                    />
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Phone *</label>
-                    <input
-                        type="text"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        required
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                        placeholder="10 digits"
-                    />
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Date of Birth *</label>
-                    <input
-                        type="date"
-                        name="dateOfBirth"
-                        value={formData.dateOfBirth}
-                        onChange={handleChange}
-                        required
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                    />
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Gender *</label>
-                    <select
-                        name="gender"
-                        value={formData.gender}
-                        onChange={handleChange}
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                    >
-                        <option>Male</option>
-                        <option>Female</option>
-                        <option>Other</option>
-                    </select>
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Department ID *</label>
-                    <input
-                        type="number"
-                        name="deptId"
-                        value={formData.deptId}
-                        onChange={handleChange}
-                        required
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                    />
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Password *</label>
-                    <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                        placeholder="Min 6 characters"
-                    />
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Admission Date *</label>
-                    <input
-                        type="date"
-                        name="admissionDate"
-                        value={formData.admissionDate}
-                        onChange={handleChange}
-                        required
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                    />
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Semester *</label>
-                    <input
-                        type="number"
-                        name="semester"
-                        value={formData.semester}
-                        onChange={handleChange}
-                        min="1"
-                        max="8"
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                    />
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Status *</label>
-                    <select
-                        name="status"
-                        value={formData.status}
-                        onChange={handleChange}
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                    >
-                        <option>Active</option>
-                        <option>Inactive</option>
-                        <option>Graduated</option>
-                    </select>
-                </div>
-
-                <button
-                    type="submit"
-                    disabled={loading}
-                    style={{
-                        width: '100%',
-                        padding: '10px',
-                        backgroundColor: '#28a745',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: loading ? 'not-allowed' : 'pointer',
-                        opacity: loading ? 0.6 : 1
-                    }}
-                >
-                    {loading ? 'Adding...' : 'Add Student'}
-                </button>
-            </form>
+  return (
+    <section className="ums-section">
+      <div className="ums-panel ums-panel--soft">
+        <div className="ums-section">
+          <p className="ums-eyebrow">Student Administration</p>
+          <h2 className="ums-title">Add New Student</h2>
+          <p className="ums-subtitle">
+            Create a new student account and store their contact details in the
+            university system.
+          </p>
         </div>
-    );
-}
+
+        {message && <div className="ums-alert ums-alert--success">{message}</div>}
+        {error && <div className="ums-alert ums-alert--error">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="ums-form">
+          <div className="ums-form-grid">
+            <div className="ums-field">
+              <label className="ums-label" htmlFor="student-name">
+                Full Name
+              </label>
+              <input
+                id="student-name"
+                className="ums-input"
+                type="text"
+                name="name"
+                placeholder="Enter student name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="ums-field">
+              <label className="ums-label" htmlFor="student-email">
+                Email Address
+              </label>
+              <input
+                id="student-email"
+                className="ums-input"
+                type="email"
+                name="email"
+                placeholder="Enter email address"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="ums-field">
+              <label className="ums-label" htmlFor="student-password">
+                Password
+              </label>
+              <input
+                id="student-password"
+                className="ums-input"
+                type="password"
+                name="password"
+                placeholder="Create a temporary password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="ums-field">
+              <label className="ums-label" htmlFor="student-phone">
+                Phone Number
+              </label>
+              <input
+                id="student-phone"
+                className="ums-input"
+                type="text"
+                name="phone"
+                placeholder="Enter phone number"
+                value={formData.phone}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="ums-field" style={{ gridColumn: "1 / -1" }}>
+              <label className="ums-label" htmlFor="student-address">
+                Address
+              </label>
+              <input
+                id="student-address"
+                className="ums-input"
+                type="text"
+                name="address"
+                placeholder="Enter address"
+                value={formData.address}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="ums-section">
+            <button type="submit" className="ums-btn ums-btn--primary">
+              Add Student
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+  );
+};
+
+export default AddStudentForm;

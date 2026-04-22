@@ -53,37 +53,46 @@ public class EnrollmentService {
      * Enroll a student in a course with full business rules
      */
     public boolean enrollStudentInCourse(int studentId, int courseId) {
+        System.out.println("DEBUG SERVICE: Attempting to enroll Student ID " + studentId + " into Course ID " + courseId);
         logger.info("Attempting to enroll Student ID " + studentId + " into Course ID " + courseId);
 
         // Rule 1: Validate Student exists
         Student student = studentDAO.getStudentById(studentId);
         if (student == null) {
+            System.out.println("DEBUG SERVICE: Student not found - ID: " + studentId);
             logger.warning("Enrollment failed: Student not found.");
             return false;
         }
+        System.out.println("DEBUG SERVICE: Student found: " + student.getName());
 
         // Rule 2: Validate Course exists
         Course course = courseDAO.getCourseById(courseId);
         if (course == null) {
+            System.out.println("DEBUG SERVICE: Course not found - ID: " + courseId);
             logger.warning("Enrollment failed: Course not found.");
             return false;
         }
+        System.out.println("DEBUG SERVICE: Course found: " + course.getCourseName());
 
         // Rule 3: Check Capacity limit
         if (!validateEnrollment(courseId)) {
+            System.out.println("DEBUG SERVICE: Course is full - ID: " + courseId);
             logger.warning("Enrollment failed: Course ID " + courseId + " is full.");
             System.err.println("Cannot enroll: The course has reached maximum capacity.");
             return false;
         }
+        System.out.println("DEBUG SERVICE: Capacity check passed");
 
         // Rule 4: Check if already enrolled (Prevent duplicates)
         List<Enrollment> existingEnrollments = enrollmentDAO.getEnrollmentsByStudent(studentId);
         for (Enrollment e : existingEnrollments) {
             if (e.getCourseId() == courseId && "Enrolled".equals(e.getStatus())) {
+                System.out.println("DEBUG SERVICE: Student already enrolled in this course");
                 logger.warning("Enrollment failed: Student is already enrolled in this course.");
                 return false;
             }
         }
+        System.out.println("DEBUG SERVICE: Duplicate check passed");
 
         // All rules passed - Create the Enrollment object
         Enrollment newEnrollment = new Enrollment();
@@ -94,6 +103,7 @@ public class EnrollmentService {
         newEnrollment.setStatus("Enrolled"); // Explicitly set in Service
 
         // Save to Database
+        System.out.println("DEBUG SERVICE: Saving enrollment to database...");
         boolean success = enrollmentDAO.addEnrollment(newEnrollment);
         
         if (success) {
@@ -101,7 +111,10 @@ public class EnrollmentService {
             int newCount = enrollmentDAO.getEnrollmentCountForCourse(courseId);
             courseDAO.updateEnrollmentCount(courseId, newCount);
             
+            System.out.println("DEBUG SERVICE: Successfully enrolled Student ID " + studentId + " in Course ID " + courseId);
             logger.info("Successfully enrolled Student ID " + studentId + " in Course ID " + courseId);
+        } else {
+            System.out.println("DEBUG SERVICE: Failed to save enrollment to database");
         }
         
         return success;
@@ -135,6 +148,33 @@ public class EnrollmentService {
     }
 
     /**
+     * Admin enrolls a student in a course (Authorization & logging included)
+     * This method is called from AdminController with admin authorization checks
+     * 
+     * @param studentId The ID of the student to enroll
+     * @param courseId The ID of the course
+     * @param adminId The ID of the admin performing the enrollment
+     * @return True if enrollment successful, False otherwise
+     */
+    public boolean adminEnrollStudent(int studentId, int courseId, int adminId) {
+        logger.info("Admin ID " + adminId + " attempting to enroll Student ID " + studentId + 
+                    " into Course ID " + courseId);
+        
+        // Use the core enrollment logic
+        boolean success = enrollStudentInCourse(studentId, courseId);
+        
+        if (success) {
+            logger.info("Admin ID " + adminId + " successfully enrolled Student ID " + studentId + 
+                       " into Course ID " + courseId);
+        } else {
+            logger.warning("Admin ID " + adminId + " failed to enroll Student ID " + studentId + 
+                          " into Course ID " + courseId);
+        }
+        
+        return success;
+    }
+
+    /**
      * Get all courses a specific student is enrolled in
      */
     public List<Enrollment> getEnrolledCourses(int studentId) {
@@ -148,6 +188,25 @@ public class EnrollmentService {
     public List<Enrollment> getEnrolledStudents(int courseId) {
         logger.info("Fetching enrollments for course ID: " + courseId);
         return enrollmentDAO.getEnrollmentsByCourse(courseId);
+    }
+
+    /**
+     * Check if a student is already enrolled in a specific course
+     * @param studentId The ID of the student
+     * @param courseId The ID of the course
+     * @return true if already enrolled with "Enrolled" status, false otherwise
+     */
+    public boolean isStudentAlreadyEnrolled(int studentId, int courseId) {
+        List<Enrollment> enrollments = enrollmentDAO.getEnrollmentsByStudent(studentId);
+        if (enrollments == null) {
+            return false;
+        }
+        for (Enrollment e : enrollments) {
+            if (e.getCourseId() == courseId && "Enrolled".equals(e.getStatus())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

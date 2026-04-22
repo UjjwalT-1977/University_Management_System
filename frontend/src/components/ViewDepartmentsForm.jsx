@@ -1,24 +1,20 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/faculty";
+const API_URL = "http://localhost:8080/api/departments";
 
 const priorityOrder = [
-  "facultyId",
-  "id",
-  "firstName",
-  "lastName",
-  "name",
-  "fullName",
-  "email",
-  "phone",
   "departmentId",
+  "id",
   "departmentName",
-  "designation",
-  "status",
+  "name",
+  "departmentCode",
+  "code",
+  "headOfDepartment",
+  "description",
 ];
 
-const getFacultyId = (faculty) => faculty?.facultyId ?? faculty?.id;
+const getDepartmentId = (department) => department?.departmentId ?? department?.id;
 
 const labelize = (value) =>
   value
@@ -41,7 +37,7 @@ const getDisplayValue = (value) => {
   }
 
   if (typeof value === "object") {
-    return value.name ?? value.fullName ?? value.departmentName ?? "—";
+    return value.name ?? value.departmentName ?? "—";
   }
 
   return value;
@@ -62,68 +58,46 @@ const getOrderedKeys = (items) => {
 
 const getEditableKeys = (item) =>
   Object.keys(item).filter(
-    (key) => !["facultyId", "id"].includes(key) && isScalarValue(item[key])
+    (key) => !["departmentId", "id"].includes(key) && isScalarValue(item[key])
   );
 
-const getBadgeClassName = (key, value) => {
-  const normalizedValue = String(value ?? "").toLowerCase();
-
-  if (key === "facultyId" || key === "id") {
-    return "ums-badge ums-badge--neutral";
-  }
-
-  if (key.toLowerCase().includes("department")) {
-    return "ums-badge ums-badge--info";
-  }
-
-  if (normalizedValue === "active") {
-    return "ums-badge ums-badge--success";
-  }
-
-  if (normalizedValue === "inactive") {
-    return "ums-badge ums-badge--warning";
-  }
-
-  return "ums-badge ums-badge--neutral";
-};
-
-function FacultyList({ refreshKey }) {
-  const [facultyList, setFacultyList] = useState([]);
+function ViewDepartmentsForm({ refreshKey }) {
+  const [departments, setDepartments] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [editedFaculty, setEditedFaculty] = useState({});
+  const [editedDepartment, setEditedDepartment] = useState({});
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const fetchFaculty = async () => {
+  const fetchDepartments = async () => {
     try {
       const response = await axios.get(API_URL);
-      setFacultyList(response.data);
+      setDepartments(response.data);
       setError("");
     } catch (err) {
-      console.error("Error fetching faculty:", err);
-      setError("Failed to load faculty.");
+      console.error("Error fetching departments:", err);
+      setError("Failed to load departments.");
     }
   };
 
   useEffect(() => {
-    fetchFaculty();
+    fetchDepartments();
   }, [refreshKey]);
 
-  const handleEditClick = (faculty) => {
-    setEditingId(getFacultyId(faculty));
-    setEditedFaculty({ ...faculty });
+  const handleEditClick = (department) => {
+    setEditingId(getDepartmentId(department));
+    setEditedDepartment({ ...department });
     setSuccessMessage("");
     setError("");
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
-    setEditedFaculty({});
+    setEditedDepartment({});
   };
 
-  const handleInputChange = (event) => {
+  const handleChange = (event) => {
     const { name, value } = event.target;
-    setEditedFaculty((prev) => ({
+    setEditedDepartment((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -131,23 +105,23 @@ function FacultyList({ refreshKey }) {
 
   const handleSaveClick = async () => {
     try {
-      const facultyId = getFacultyId(editedFaculty);
-      await axios.put(`${API_URL}/${facultyId}`, editedFaculty);
+      const departmentId = getDepartmentId(editedDepartment);
+      await axios.put(`${API_URL}/${departmentId}`, editedDepartment);
       setEditingId(null);
-      setEditedFaculty({});
-      setSuccessMessage("Faculty record updated successfully.");
+      setEditedDepartment({});
+      setSuccessMessage("Department updated successfully.");
       setError("");
-      fetchFaculty();
+      fetchDepartments();
     } catch (err) {
-      console.error("Error updating faculty:", err);
-      setError("Failed to update faculty.");
+      console.error("Error updating department:", err);
+      setError("Failed to update department.");
       setSuccessMessage("");
     }
   };
 
-  const handleDeleteClick = async (facultyId) => {
+  const handleDeleteClick = async (departmentId) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this faculty record?"
+      "Are you sure you want to delete this department?"
     );
 
     if (!confirmDelete) {
@@ -155,34 +129,34 @@ function FacultyList({ refreshKey }) {
     }
 
     try {
-      await axios.delete(`${API_URL}/${facultyId}`);
-      setFacultyList((prev) =>
-        prev.filter((faculty) => getFacultyId(faculty) !== facultyId)
+      await axios.delete(`${API_URL}/${departmentId}`);
+      setDepartments((prev) =>
+        prev.filter((department) => getDepartmentId(department) !== departmentId)
       );
-      if (editingId === facultyId) {
+      if (editingId === departmentId) {
         handleCancelEdit();
       }
-      setSuccessMessage("Faculty record deleted successfully.");
+      setSuccessMessage("Department deleted successfully.");
       setError("");
     } catch (err) {
-      console.error("Error deleting faculty:", err);
-      setError("Failed to delete faculty.");
+      console.error("Error deleting department:", err);
+      setError("Failed to delete department.");
       setSuccessMessage("");
     }
   };
 
-  const columns = getOrderedKeys(facultyList);
+  const columns = getOrderedKeys(departments);
 
   return (
     <section className="ums-section">
       <div className="ums-panel ums-panel--soft">
         <div className="ums-section">
-          <h2 className="ums-title">Faculty Directory</h2>
+          <h2 className="ums-title">Departments</h2>
           <p className="ums-subtitle">
-            Manage faculty records, update details, and remove outdated entries.
+            Edit department information and remove records that are no longer needed.
           </p>
           <p className="ums-meta">
-            {facultyList.length} faculty member{facultyList.length === 1 ? "" : "s"} listed
+            {departments.length} department{departments.length === 1 ? "" : "s"} available
           </p>
         </div>
 
@@ -192,8 +166,8 @@ function FacultyList({ refreshKey }) {
 
         {error && <div className="ums-alert ums-alert--error">{error}</div>}
 
-        {!facultyList.length ? (
-          <div className="ums-empty-state">No faculty records available.</div>
+        {!departments.length ? (
+          <div className="ums-empty-state">No departments available.</div>
         ) : (
           <div className="ums-table-wrap">
             <table className="ums-table">
@@ -206,46 +180,41 @@ function FacultyList({ refreshKey }) {
                 </tr>
               </thead>
               <tbody>
-                {facultyList.map((faculty) => {
-                  const facultyId = getFacultyId(faculty);
-                  const isEditing = editingId === facultyId;
+                {departments.map((department) => {
+                  const departmentId = getDepartmentId(department);
+                  const isEditing = editingId === departmentId;
 
                   return (
-                    <React.Fragment key={facultyId}>
+                    <React.Fragment key={departmentId}>
                       <tr className={isEditing ? "ums-table__row--editing" : ""}>
-                        {columns.map((column) => {
-                          const value = getDisplayValue(faculty[column]);
-                          const shouldBadge =
-                            column === "facultyId" ||
-                            column === "id" ||
-                            column.toLowerCase().includes("department") ||
-                            column.toLowerCase().includes("status");
-
-                          return (
-                            <td key={column}>
-                              {shouldBadge ? (
-                                <span className={getBadgeClassName(column, value)}>
-                                  {value}
-                                </span>
-                              ) : (
-                                value
-                              )}
-                            </td>
-                          );
-                        })}
+                        {columns.map((column) => (
+                          <td key={column}>
+                            {column === "departmentId" || column === "id" ? (
+                              <span className="ums-badge ums-badge--neutral">
+                                {getDisplayValue(department[column])}
+                              </span>
+                            ) : column.toLowerCase().includes("code") ? (
+                              <span className="ums-badge ums-badge--info">
+                                {getDisplayValue(department[column])}
+                              </span>
+                            ) : (
+                              getDisplayValue(department[column])
+                            )}
+                          </td>
+                        ))}
                         <td>
                           <div className="ums-table__actions">
                             <button
                               type="button"
                               className="ums-btn ums-btn--primary"
-                              onClick={() => handleEditClick(faculty)}
+                              onClick={() => handleEditClick(department)}
                             >
                               Edit
                             </button>
                             <button
                               type="button"
                               className="ums-btn ums-btn--danger"
-                              onClick={() => handleDeleteClick(facultyId)}
+                              onClick={() => handleDeleteClick(departmentId)}
                             >
                               Delete
                             </button>
@@ -265,20 +234,20 @@ function FacultyList({ refreshKey }) {
                                 }}
                               >
                                 <div className="ums-form-grid ums-form-grid--compact">
-                                  {getEditableKeys(editedFaculty).map((key) => (
+                                  {getEditableKeys(editedDepartment).map((key) => (
                                     <div className="ums-field" key={key}>
                                       <label
                                         className="ums-label"
-                                        htmlFor={`faculty-${facultyId}-${key}`}
+                                        htmlFor={`department-${departmentId}-${key}`}
                                       >
                                         {labelize(key)}
                                       </label>
                                       <input
-                                        id={`faculty-${facultyId}-${key}`}
+                                        id={`department-${departmentId}-${key}`}
                                         type="text"
                                         name={key}
-                                        value={editedFaculty[key] ?? ""}
-                                        onChange={handleInputChange}
+                                        value={editedDepartment[key] ?? ""}
+                                        onChange={handleChange}
                                         className="ums-input"
                                       />
                                     </div>
@@ -317,4 +286,4 @@ function FacultyList({ refreshKey }) {
   );
 }
 
-export default FacultyList;
+export default ViewDepartmentsForm;

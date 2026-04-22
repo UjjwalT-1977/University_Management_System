@@ -30,10 +30,16 @@ public class EnrollmentDAO {
             pstmt.setString(5, enrollment.getStatus() != null ? enrollment.getStatus() : "Enrolled");
             
             int rowsAffected = pstmt.executeUpdate();
+            System.out.println("DEBUG DAO: Enrollment inserted for Student " + enrollment.getStudentId() + 
+                             " in Course " + enrollment.getCourseId());
             return rowsAffected > 0;
             
         } catch (SQLException e) {
             System.err.println("Add Enrollment Error: " + e.getMessage());
+            System.err.println("SQL Error Code: " + e.getErrorCode());
+            System.err.println("SQL State: " + e.getSQLState());
+            e.printStackTrace();
+            System.out.println("DEBUG DAO: Failed to add enrollment - " + e.getMessage());
         }
         
         return false;

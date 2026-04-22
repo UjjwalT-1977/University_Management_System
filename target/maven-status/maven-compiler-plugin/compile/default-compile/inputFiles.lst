@@ -3,6 +3,7 @@ D:\University Management System\University_Management_System\src\main\java\com\u
 D:\University Management System\University_Management_System\src\main\java\com\university\Controllers\AttendanceController.java
 D:\University Management System\University_Management_System\src\main\java\com\university\Controllers\AuthController.java
 D:\University Management System\University_Management_System\src\main\java\com\university\Controllers\CourseController.java
+D:\University Management System\University_Management_System\src\main\java\com\university\Controllers\DepartmentController.java
 D:\University Management System\University_Management_System\src\main\java\com\university\Controllers\EnrollmentController.java
 D:\University Management System\University_Management_System\src\main\java\com\university\Controllers\FacultyController.java
 D:\University Management System\University_Management_System\src\main\java\com\university\Controllers\MarksController.java
@@ -16,6 +17,7 @@ D:\University Management System\University_Management_System\src\main\java\com\u
 D:\University Management System\University_Management_System\src\main\java\com\university\dao\FacultyDAO.java
 D:\University Management System\University_Management_System\src\main\java\com\university\dao\MarksDAO.java
 D:\University Management System\University_Management_System\src\main\java\com\university\dao\StudentDAO.java
+D:\University Management System\University_Management_System\src\main\java\com\university\dto\EnrollmentRequest.java
 D:\University Management System\University_Management_System\src\main\java\com\university\dto\LoginRequest.java
 D:\University Management System\University_Management_System\src\main\java\com\university\models\Admin.java
 D:\University Management System\University_Management_System\src\main\java\com\university\models\Attendance.java

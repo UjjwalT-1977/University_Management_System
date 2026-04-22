@@ -18,7 +18,7 @@ CREATE TABLE admin (
     phone VARCHAR(15),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+) ENGINE=InnoDB ;
 
 -- ============================================
 -- TABLE 2: DEPARTMENT
@@ -166,7 +166,7 @@ CREATE INDEX idx_enrollment_course ON enrollment(course_id);
 -- INSERT DEFAULT ADMIN USER
 -- ============================================
 INSERT INTO admin (username, password, email, name, phone) 
-VALUES ('admin', 'admin@123', 'admin@university.edu', 'System Administrator', '1234567890');
+VALUES ('admin', 'admin@123', 'admin@university.edu', 'System Administrator', '1234567890') ;
 
 -- ============================================
 -- INSERT SAMPLE DEPARTMENTS

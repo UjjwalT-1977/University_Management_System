@@ -10,6 +10,7 @@ export default function StudentDashboard({ authData }) {
     const [courseDetails, setCourseDetails] = useState({});
     const [attendance, setAttendance] = useState([]);
     const [marks, setMarks] = useState([]);
+    const [allCourses, setAllCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -32,6 +33,10 @@ export default function StudentDashboard({ authData }) {
             const enrollRes = await axios.get(`http://localhost:8080/api/enrollment/student/${studentId}`);
             const enrolledData = enrollRes.data.data || [];
             setEnrolledCourses(enrolledData);
+
+            // Fetch all courses
+            const allCoursesRes = await axios.get(`http://localhost:8080/api/course/all`);
+            setAllCourses(allCoursesRes.data.data || []);
 
             // Fetch course details for all enrolled courses
             if (enrolledData.length > 0) {
@@ -98,43 +103,49 @@ export default function StudentDashboard({ authData }) {
         infoCard: { backgroundColor: '#e7f3ff', padding: '15px', borderRadius: '4px', border: '1px solid #b3d9ff' }
     };
 
-    if (loading) return <div style={styles.container}><p>Loading dashboard...</p></div>;
+    if (loading) return <div style={styles.container}><p className="ums-subtitle">Loading dashboard...</p></div>;
 
     return (
-        <div style={styles.container}>
+    <div className="ums-page ums-shell">
             {/* Header */}
             <div style={styles.header}>
-                <h1>Student Dashboard</h1>
-                <button style={styles.button} onClick={handleLogout}>Logout</button>
+                <h1 className="ums-title">Student Dashboard</h1>
+                <button className="ums-btn ums-btn--danger" onClick={handleLogout}>Logout</button>
             </div>
 
             {/* Error Message */}
-            {error && <div style={{ padding: '10px', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '15px' }}>{error}</div>}
+            {error && <div className="ums-alert ums-alert--error">{error}</div>}
 
             {/* Tabs */}
             <div style={styles.tabs}>
-                <button 
-                    style={{ ...styles.tab, ...(activeTab === 'overview' && styles.tabActive) }}
-                    onClick={() => setActiveTab('overview')}
-                >
+                <button className={activeTab === 'overview' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
+                   
+                    
+                 onClick={() => setActiveTab('overview')}>
                     Overview
                 </button>
-                <button 
-                    style={{ ...styles.tab, ...(activeTab === 'courses' && styles.tabActive) }}
-                    onClick={() => setActiveTab('courses')}
-                >
+                <button className={activeTab === 'courses' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
+                   
+                    
+                 onClick={() => setActiveTab('courses')}>
                     My Courses
                 </button>
-                <button 
-                    style={{ ...styles.tab, ...(activeTab === 'attendance' && styles.tabActive) }}
-                    onClick={() => setActiveTab('attendance')}
-                >
+                <button className={activeTab === 'availableCourses' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
+                   
+                    
+                 onClick={() => setActiveTab('availableCourses')}>
+                    Available Courses
+                </button>
+                <button className={activeTab === 'attendance' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
+                   
+                    
+                 onClick={() => setActiveTab('attendance')}>
                     Attendance
                 </button>
-                <button 
-                    style={{ ...styles.tab, ...(activeTab === 'marks' && styles.tabActive) }}
-                    onClick={() => setActiveTab('marks')}
-                >
+                <button className={activeTab === 'marks' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
+                   
+                    
+                 onClick={() => setActiveTab('marks')}>
                     Marks & Grades
                 </button>
             </div>
@@ -142,7 +153,7 @@ export default function StudentDashboard({ authData }) {
             {/* TAB: OVERVIEW */}
             {activeTab === 'overview' && (
                 <div style={styles.Section}>
-                    <h2>Student Information</h2>
+                    <h2 className="ums-title">Student Information</h2>
                     {studentInfo && (
                         <div style={styles.infoGrid}>
                             <div style={styles.infoCard}>
@@ -186,7 +197,7 @@ export default function StudentDashboard({ authData }) {
                 <div style={styles.Section}>
                     <h2>Enrolled Courses</h2>
                     {enrolledCourses.length > 0 ? (
-                        <table style={styles.table}>
+                        <div className="ums-table-wrap"><table className="ums-table">
                             <thead>
                                 <tr>
                                     <th style={styles.th}>Course Code</th>
@@ -214,9 +225,46 @@ export default function StudentDashboard({ authData }) {
                                     );
                                 })}
                             </tbody>
-                        </table>
+                        </table></div>
                     ) : (
                         <p>No courses enrolled yet.</p>
+                    )}
+                </div>
+            )}
+
+            {/* TAB: AVAILABLE COURSES */}
+            {activeTab === 'availableCourses' && (
+                <div style={styles.Section}>
+                    <h2>Available Courses</h2>
+                    <p style={{ color: '#666' }}>📌 Note: To enroll in a course, please contact your admin.</p>
+                    {allCourses && allCourses.length > 0 ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                            {allCourses.map((course) => {
+                                const isEnrolled = enrolledCourses.some(ec => ec.courseId === course.courseId);
+                                return (
+                                    <div key={course.courseId} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: isEnrolled ? '#e8f5e9' : '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '10px' }}>
+                                            <div>
+                                                <h4 style={{ margin: '0 0 5px 0' }}>{course.courseName}</h4>
+                                                <p style={{ margin: '0', color: '#666', fontSize: '12px' }}><strong>Code:</strong> {course.courseCode}</p>
+                                            </div>
+                                            {isEnrolled && (
+                                                <span style={{ backgroundColor: '#28a745', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>✓ Enrolled</span>
+                                            )}
+                                        </div>
+                                        <div style={{ borderTop: '1px solid #eee', paddingTop: '10px', marginTop: '10px' }}>
+                                            <p style={{ margin: '5px 0' }}><strong>Credits:</strong> {course.credits}</p>
+                                            <p style={{ margin: '5px 0' }}><strong>Max Capacity:</strong> {course.maxCapacity} students</p>
+                                            <p style={{ margin: '5px 0' }}><strong>Semester:</strong> {course.semester}</p>
+                                            <p style={{ margin: '5px 0' }}><strong>Year:</strong> {course.year}</p>
+                                            <p style={{ margin: '5px 0' }}><strong>Department ID:</strong> {course.deptId}</p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <p>No courses available at the moment.</p>
                     )}
                 </div>
             )}
@@ -226,7 +274,7 @@ export default function StudentDashboard({ authData }) {
                 <div style={styles.Section}>
                     <h2>Attendance Records</h2>
                     {attendance.length > 0 ? (
-                        <table style={styles.table}>
+                        <div className="ums-table-wrap"><table className="ums-table">
                             <thead>
                                 <tr>
                                     <th style={styles.th}>Attendance ID</th>
@@ -251,7 +299,7 @@ export default function StudentDashboard({ authData }) {
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                        </table></div>
                     ) : (
                         <p>No attendance records yet.</p>
                     )}
@@ -263,16 +311,16 @@ export default function StudentDashboard({ authData }) {
                 <div style={styles.Section}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                         <h2 style={{ margin: 0 }}>Marks & Grades</h2>
-                        <button 
+                        <button className="ums-btn ums-btn--primary" 
                             onClick={refreshMarks}
-                            style={{ padding: '8px 16px', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                           
                         >
                             🔄 Refresh Marks
                         </button>
                     </div>
                     {marks.length > 0 ? (
                         <div style={{ overflowX: 'auto' }}>
-                            <table style={styles.table}>
+                            <div className="ums-table-wrap"><table className="ums-table">
                                 <thead>
                                     <tr>
                                         <th style={styles.th}>Course Code</th>
@@ -326,7 +374,7 @@ export default function StudentDashboard({ authData }) {
                                         );
                                     })}
                                 </tbody>
-                            </table>
+                            </table></div>
                             <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
                                 ⁕ Internal (0-30) + External (0-70) = Total (0-100)<br/>
                                 Grade: A ≥ 90 | B ≥ 80 | C ≥ 70 | D ≥ 60 | F &lt; 60

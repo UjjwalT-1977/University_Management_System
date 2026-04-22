@@ -267,4 +267,36 @@ public class EnrollmentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+    /**
+     * GET /api/enrollment/check/{studentId}/{courseId}
+     * Check if a student is already enrolled in a course
+     * Used by frontend to show warning before enrollment attempt
+     * 
+     * @param studentId Student ID
+     * @param courseId Course ID
+     * @return Object with isEnrolled flag
+     */
+    @GetMapping("/check/{studentId}/{courseId}")
+    public ResponseEntity<Map<String, Object>> checkEnrollmentStatus(
+            @PathVariable("studentId") int studentId,
+            @PathVariable("courseId") int courseId) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            boolean isEnrolled = enrollmentService.isStudentAlreadyEnrolled(studentId, courseId);
+            
+            response.put("status", "success");
+            response.put("message", isEnrolled ? "Student is already enrolled in this course" : "Student is not enrolled");
+            response.put("isEnrolled", isEnrolled);
+            response.put("studentId", studentId);
+            response.put("courseId", courseId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", "Error checking enrollment status: " + e.getMessage());
+            response.put("isEnrolled", false);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 }

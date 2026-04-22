@@ -25,12 +25,18 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
         
+        System.out.println("DEBUG AuthController: Login attempt");
+        System.out.println("  Identifier: " + request.getIdentifier());
+        System.out.println("  Role: " + request.getRole());
+        
         // 1. Hand the data to your Java Core
         Object authenticatedUser = authService.authenticate(
                 request.getIdentifier(), 
                 request.getPassword(), 
                 request.getRole()
         );
+
+        System.out.println("DEBUG AuthController: Authentication result: " + (authenticatedUser != null ? "SUCCESS" : "FAILED"));
 
         // 2. Prepare the JSON response package
         Map<String, Object> response = new HashMap<>() ;

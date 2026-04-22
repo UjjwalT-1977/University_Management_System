@@ -44,8 +44,20 @@ public class CourseController {
         Map<String, Object> response = new HashMap<>();
 
         try {
+            System.out.println("DEBUG CourseController: Received course data:");
+            System.out.println("  Code: " + course.getCourseCode());
+            System.out.println("  Name: " + course.getCourseName());
+            System.out.println("  DeptId: " + course.getDeptId());
+            System.out.println("  FacultyId: " + course.getFacultyId());
+            System.out.println("  Credits: " + course.getCredits());
+            System.out.println("  MaxCapacity: " + course.getMaxCapacity());
+            System.out.println("  Semester: " + course.getSemester());
+            System.out.println("  Year: " + course.getYear());
+            
             String validationError = courseService.validateCourseData(course);
-            if (validationError != null) {
+            System.out.println("DEBUG CourseController: Validation result: " + validationError);
+            
+            if (!validationError.equals("VALID")) {
                 response.put("status", "error");
                 response.put("message", validationError);
                 response.put("data", null);

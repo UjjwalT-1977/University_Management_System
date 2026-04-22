@@ -5,3 +5,4 @@
 *.iml
 db.properties 
 .vscode/
+.log/

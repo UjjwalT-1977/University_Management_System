@@ -84,12 +84,17 @@ export default function LoginForm({ setAuthData }) {
 
     // 6. The actual HTML/UI
     return (
-        <div style={{ maxWidth: '400px', margin: '50px auto', fontFamily: 'sans-serif' }}>
-            <h2>University Login</h2>
-            
-            <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+    <div className="ums-page ums-shell ums-shell--login ums-login">
+      <section className="ums-section">
+        <div className="ums-login__card ums-panel ums-panel--accent">
+          <div className="ums-login__brand">
+            <p className="ums-eyebrow">University Management System</p>
+            <h1 className="ums-title">Welcome back</h1>
+            <p className="ums-subtitle">Sign in with your role-based credentials to continue to your dashboard.</p>
+          </div>
+          <form className="ums-form ums-login__form" onSubmit={handleLogin}>
                 
-                <input 
+                <input className="ums-input" 
                     type="text" 
                     placeholder="Username or Roll Number" 
                     value={identifier}
@@ -99,7 +104,7 @@ export default function LoginForm({ setAuthData }) {
                     style={{ padding: '10px' }}
                 />
 
-                <input 
+                <input className="ums-input" 
                     type="password" 
                     placeholder="Password" 
                     value={password}
@@ -109,7 +114,7 @@ export default function LoginForm({ setAuthData }) {
                     style={{ padding: '10px' }}
                 />
 
-                <select 
+                <select className="ums-select" 
                     value={role} 
                     onChange={(e) => setRole(e.target.value)}
                     disabled={isLoading}
@@ -120,28 +125,20 @@ export default function LoginForm({ setAuthData }) {
                     <option value="ADMIN">Admin</option>
                 </select>
 
-                <button 
+                <button className="ums-btn ums-btn--info" 
                     type="submit" 
                     disabled={isLoading}
-                    style={{ 
-                        padding: '10px', 
-                        backgroundColor: isLoading ? '#cccccc' : '#0056b3', 
-                        color: 'white', 
-                        border: 'none', 
-                        cursor: isLoading ? 'not-allowed' : 'pointer'
-                    }}
+                   
                 >
                     {isLoading ? 'Logging in...' : 'Login'}
                 </button>
 
             </form>
-
-            {/* Display our success or error message here */}
-            {message && (
-                <div style={{ marginTop: '20px', padding: '10px', backgroundColor: isError ? '#ffebee' : '#e8f5e9', color: isError ? 'red' : 'green' }}>
-                    {message}
-                </div>
-            )}
         </div>
-    );
+        <div className="ums-login__footer">
+          <p className="ums-muted">Secure access for administrators, faculty members, and students.</p>
+        </div>
+      </section>
+    </div>
+  );
 }

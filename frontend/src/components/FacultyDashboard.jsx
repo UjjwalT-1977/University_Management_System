@@ -236,14 +236,14 @@ export default function FacultyDashboard({ authData }) {
         infoCard: { backgroundColor: '#e8f5e9', padding: '15px', borderRadius: '4px', border: '1px solid #a5d6a7' }
     };
 
-    if (loading) return <div style={styles.container}><p>Loading dashboard...</p></div>;
+    if (loading) return <div style={styles.container}><p className="ums-subtitle">Loading dashboard...</p></div>;
 
     return (
-        <div style={styles.container}>
+    <div className="ums-page ums-shell">
             {/* Header */}
             <div style={styles.header}>
-                <h1>Faculty Dashboard</h1>
-                <button style={styles.button} onClick={handleLogout}>Logout</button>
+                <h1 className="ums-title">Faculty Dashboard</h1>
+                <button className="ums-btn ums-btn--danger" onClick={handleLogout}>Logout</button>
             </div>
 
             {/* Error Message */}
@@ -264,34 +264,34 @@ export default function FacultyDashboard({ authData }) {
 
             {/* Tabs */}
             <div style={styles.tabs}>
-                <button 
-                    style={{ ...styles.tab, ...(activeTab === 'overview' && styles.tabActive) }}
-                    onClick={() => setActiveTab('overview')}
-                >
+                <button className={activeTab === 'overview' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
+                   
+                    
+                 onClick={() => setActiveTab('overview')}>
                     Overview
                 </button>
-                <button 
-                    style={{ ...styles.tab, ...(activeTab === 'courses' && styles.tabActive) }}
-                    onClick={() => setActiveTab('courses')}
-                >
+                <button className={activeTab === 'courses' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
+                   
+                    
+                 onClick={() => setActiveTab('courses')}>
                     My Courses
                 </button>
-                <button 
-                    style={{ ...styles.tab, ...(activeTab === 'students' && styles.tabActive) }}
-                    onClick={() => setActiveTab('students')}
-                >
+                <button className={activeTab === 'students' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
+                   
+                    
+                 onClick={() => setActiveTab('students')}>
                     Course Students
                 </button>
-                <button 
-                    style={{ ...styles.tab, ...(activeTab === 'attendance' && styles.tabActive) }}
-                    onClick={() => setActiveTab('attendance')}
-                >
+                <button className={activeTab === 'attendance' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
+                   
+                    
+                 onClick={() => setActiveTab('attendance')}>
                     Course Attendance
                 </button>
-                <button 
-                    style={{ ...styles.tab, ...(activeTab === 'marks' && styles.tabActive) }}
-                    onClick={() => setActiveTab('marks')}
-                >
+                <button className={activeTab === 'marks' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
+                   
+                    
+                 onClick={() => setActiveTab('marks')}>
                     Marks Management
                 </button>
             </div>
@@ -299,7 +299,7 @@ export default function FacultyDashboard({ authData }) {
             {/* TAB: OVERVIEW */}
             {activeTab === 'overview' && (
                 <div style={styles.Section}>
-                    <h2>Faculty Information</h2>
+                    <h2 className="ums-title">Faculty Information</h2>
                     {facultyInfo && (
                         <div style={styles.infoGrid}>
                             <div style={styles.infoCard}>
@@ -343,7 +343,7 @@ export default function FacultyDashboard({ authData }) {
                 <div style={styles.Section}>
                     <h2>Assigned Courses</h2>
                     {assignedCourses.length > 0 ? (
-                        <table style={styles.table}>
+                        <div className="ums-table-wrap"><table className="ums-table">
                             <thead>
                                 <tr>
                                     <th style={styles.th}>Course ID</th>
@@ -365,8 +365,8 @@ export default function FacultyDashboard({ authData }) {
                                         <td style={styles.td}>{course.maxCapacity}</td>
                                         <td style={styles.td}>{course.currentEnrollment}</td>
                                         <td style={styles.td}>
-                                            <button 
-                                                style={{ padding: '6px 12px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                            <button className="ums-btn ums-btn--info" 
+                                               
                                                 onClick={() => { setSelectedCourse(course.courseId); setActiveTab('students'); }}
                                             >
                                                 View Students
@@ -375,7 +375,7 @@ export default function FacultyDashboard({ authData }) {
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                        </table></div>
                     ) : (
                         <p>No courses assigned.</p>
                     )}
@@ -393,7 +393,7 @@ export default function FacultyDashboard({ authData }) {
                     )}
                     
                     {courseStudents.length > 0 ? (
-                        <table style={styles.table}>
+                        <div className="ums-table-wrap"><table className="ums-table">
                             <thead>
                                 <tr>
                                     <th style={styles.th}>Enrollment ID</th>
@@ -418,7 +418,7 @@ export default function FacultyDashboard({ authData }) {
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                        </table></div>
                     ) : (
                         <p>No students in this course yet.</p>
                     )}
@@ -436,8 +436,8 @@ export default function FacultyDashboard({ authData }) {
                         {selectedCourse ? (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px' }}>Student:</label>
-                                    <select 
+                                    <label className="ums-label">Student:</label>
+                                    <select className="ums-select" 
                                         value={attendanceForm.studentId}
                                         onChange={(e) => { setAttendanceForm({ ...attendanceForm, studentId: e.target.value }); setError(''); }}
                                         style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '4px', width: '100%' }}
@@ -453,8 +453,8 @@ export default function FacultyDashboard({ authData }) {
                                 </div>
 
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px' }}>Date:</label>
-                                    <input 
+                                    <label className="ums-label">Date:</label>
+                                    <input className="ums-input" 
                                         type="date"
                                         value={attendanceForm.date}
                                         onChange={(e) => { setAttendanceForm({ ...attendanceForm, date: e.target.value }); setError(''); }}
@@ -463,8 +463,8 @@ export default function FacultyDashboard({ authData }) {
                                 </div>
 
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px' }}>Status:</label>
-                                    <select 
+                                    <label className="ums-label">Status:</label>
+                                    <select className="ums-select" 
                                         value={attendanceForm.status}
                                         onChange={(e) => { setAttendanceForm({ ...attendanceForm, status: e.target.value }); setError(''); }}
                                         style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '4px', width: '100%' }}
@@ -476,16 +476,16 @@ export default function FacultyDashboard({ authData }) {
                                 </div>
 
                                 <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-                                    <button 
+                                    <button className="ums-btn ums-btn--success" 
                                         onClick={handleMarkAttendance}
-                                        style={{ padding: '10px 20px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', flex: 1 }}
+                                       
                                     >
                                         {editingAttendanceId ? '✓ Update' : '✓ Mark'}
                                     </button>
                                     {editingAttendanceId && (
-                                        <button 
+                                        <button className="ums-btn ums-btn--ghost" 
                                             onClick={handleCancelEdit}
-                                            style={{ padding: '10px 15px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                           
                                         >
                                             Cancel
                                         </button>
@@ -501,7 +501,7 @@ export default function FacultyDashboard({ authData }) {
 
                     {/* Attendance Table */}
                     <h3>📋 Attendance Records
-                        <button 
+                        <button className="ums-btn ums-btn--primary" 
                             onClick={() => fetchCourseDetails(selectedCourse)}
                             style={{ marginLeft: '10px', padding: '6px 12px', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' }}
                         >
@@ -510,7 +510,7 @@ export default function FacultyDashboard({ authData }) {
                     </h3>
                     {selectedCourse && courseAttendance.length > 0 ? (
                         <div style={{ overflowX: 'auto' }}>
-                            <table style={styles.table}>
+                            <div className="ums-table-wrap"><table className="ums-table">
                                 <thead>
                                     <tr>
                                         <th style={styles.th}>Student Name</th>
@@ -536,7 +536,7 @@ export default function FacultyDashboard({ authData }) {
                                                 </td>
                                                 <td style={styles.td}>{att.recordedBy}</td>
                                                 <td style={styles.td}>
-                                                    <button 
+                                                    <button className="ums-btn ums-btn--primary" 
                                                         onClick={() => handleEditAttendance(att)}
                                                         style={{ padding: '6px 12px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}
                                                     >
@@ -547,7 +547,7 @@ export default function FacultyDashboard({ authData }) {
                                         );
                                     })}
                                 </tbody>
-                            </table>
+                            </table></div>
                         </div>
                     ) : selectedCourse ? (
                         <p style={{ color: '#666', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
@@ -573,8 +573,8 @@ export default function FacultyDashboard({ authData }) {
                         {selectedCourse ? (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px' }}>Student:</label>
-                                    <select 
+                                    <label className="ums-label">Student:</label>
+                                    <select className="ums-select" 
                                         value={markForm.studentId}
                                         onChange={(e) => setMarkForm({ ...markForm, studentId: e.target.value })}
                                         style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '4px', width: '100%' }}
@@ -589,8 +589,8 @@ export default function FacultyDashboard({ authData }) {
                                 </div>
                                 
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px' }}>Internal Marks (0-30):</label>
-                                    <input 
+                                    <label className="ums-label">Internal Marks (0-30):</label>
+                                    <input className="ums-input" 
                                         type="number" 
                                         min="0"
                                         max="30"
@@ -603,8 +603,8 @@ export default function FacultyDashboard({ authData }) {
                                 </div>
 
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px' }}>External Marks (0-70):</label>
-                                    <input 
+                                    <label className="ums-label">External Marks (0-70):</label>
+                                    <input className="ums-input" 
                                         type="number" 
                                         min="0"
                                         max="70"
@@ -618,19 +618,19 @@ export default function FacultyDashboard({ authData }) {
 
                                 {markForm.internalMarks && markForm.externalMarks && (
                                     <div>
-                                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px', color: '#28a745' }}>Total Calculated:</label>
-                                        <input 
+                                        <label className="ums-label">Total Calculated:</label>
+                                        <input className="ums-input" 
                                             type="number" 
                                             value={(parseFloat(markForm.internalMarks || 0) + parseFloat(markForm.externalMarks || 0)).toFixed(1)}
                                             disabled
-                                            style={{ padding: '10px', border: '2px solid #28a745', borderRadius: '4px', width: '100%', backgroundColor: '#e8f5e9', fontWeight: 'bold' }}
+                                           
                                         />
                                     </div>
                                 )}
                                 
-                                <button 
+                                <button className="ums-btn ums-btn--primary" 
                                     onClick={handleRecordMarks}
-                                    style={{ padding: '10px 20px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', alignSelf: 'flex-end' }}
+                                   
                                 >
                                     ✓ Record Marks
                                 </button>
@@ -644,7 +644,7 @@ export default function FacultyDashboard({ authData }) {
 
                     {/* Marks Table */}
                     <h3>📊 Course Marks Records  
-                        <button 
+                        <button className="ums-btn ums-btn--primary" 
                             onClick={() => fetchCourseDetails(selectedCourse)}
                             style={{ marginLeft: '10px', padding: '6px 12px', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' }}
                         >
@@ -653,7 +653,7 @@ export default function FacultyDashboard({ authData }) {
                     </h3>
                     {courseMarks && courseMarks.length > 0 ? (
                         <div style={{ overflowX: 'auto' }}>
-                            <table style={styles.table}>
+                            <div className="ums-table-wrap"><table className="ums-table">
                                 <thead>
                                     <tr>
                                         <th style={styles.th}>Student ID</th>
@@ -706,7 +706,7 @@ export default function FacultyDashboard({ authData }) {
                                         );
                                     })}
                                 </tbody>
-                            </table>
+                            </table></div>
                             <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
                                 ⁕ Grade: A ≥ 90 | B ≥ 80 | C ≥ 70 | D ≥ 60 | F &lt; 60
                             </p>
