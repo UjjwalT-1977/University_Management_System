@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/departments";
+const API_URL = "http://localhost:8080/api/department/all";
 
 const priorityOrder = [
   "departmentId",
@@ -71,7 +71,7 @@ function ViewDepartmentsForm({ refreshKey }) {
   const fetchDepartments = async () => {
     try {
       const response = await axios.get(API_URL);
-      setDepartments(response.data);
+      setDepartments(response.data?.data || response.data || []);
       setError("");
     } catch (err) {
       console.error("Error fetching departments:", err);
@@ -106,7 +106,7 @@ function ViewDepartmentsForm({ refreshKey }) {
   const handleSaveClick = async () => {
     try {
       const departmentId = getDepartmentId(editedDepartment);
-      await axios.put(`${API_URL}/${departmentId}`, editedDepartment);
+      await axios.put(`http://localhost:8080/api/department/update/${departmentId}`, editedDepartment);
       setEditingId(null);
       setEditedDepartment({});
       setSuccessMessage("Department updated successfully.");
@@ -129,7 +129,7 @@ function ViewDepartmentsForm({ refreshKey }) {
     }
 
     try {
-      await axios.delete(`${API_URL}/${departmentId}`);
+      await axios.delete(`http://localhost:8080/api/department/delete/${departmentId}`);
       setDepartments((prev) =>
         prev.filter((department) => getDepartmentId(department) !== departmentId)
       );

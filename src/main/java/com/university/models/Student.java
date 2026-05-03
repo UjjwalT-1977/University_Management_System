@@ -1,5 +1,6 @@
 package com.university.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime; // FIX 1: Added this import
 
@@ -14,10 +15,12 @@ public class Student {
     private String name;             // Full name
     private String email;            // Email address (unique)
     private String phone;            // Phone number
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;   // Date of birth
     private String gender;           // Male/Female/Other
     private int deptId;              // Foreign Key to Department
     private String password;         // Login password
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate admissionDate; // Admission date
     private int semester;            // Current semester
     private String status;           // Active/Inactive/Graduated

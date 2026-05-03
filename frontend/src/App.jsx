@@ -4,6 +4,7 @@ import LoginForm from './components/loginform';
 import AdminDashboard from './components/AdminDashboard';
 import FacultyDashboard from './components/FacultyDashboard';
 import StudentDashboard from './components/StudentDashboard';
+import TakeQuiz from './components/TakeQuiz';
 
 function App() {
   // Store authentication state globally
@@ -58,7 +59,17 @@ function App() {
             />
           } 
         />
+         <Route 
+          path="/take-quiz/:quizId" 
+          element={
+            <ProtectedRoute 
+              element={<TakeQuiz authData={authData} />} 
+              requiredRole="STUDENT" 
+            />
+          } 
+        />
       </Routes>
+     
     </BrowserRouter>
   );
 }
