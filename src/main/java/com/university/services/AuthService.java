@@ -46,7 +46,7 @@ public class AuthService {
         }
 
         switch (role.toUpperCase()) {
-            case "ADMIN":
+            case "ADMIN": 
                 return authenticateAdmin(identifier, password);
             case "STUDENT":
                 return authenticateStudent(identifier, password);

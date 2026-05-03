@@ -6,9 +6,9 @@ const AddCourseForm = ({ onCourseAdded }) => {
     courseName: "",
     courseCode: "",
     credits: "",
-    departmentId: "",
+    deptId: "",
     facultyId: "",
-    maxStudents: "",
+    maxCapacity: "",
   });
   const [departments, setDepartments] = useState([]);
   const [faculties, setFaculties] = useState([]);
@@ -23,8 +23,8 @@ const AddCourseForm = ({ onCourseAdded }) => {
 
   const fetchDepartments = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/admin/departments");
-      setDepartments(response.data);
+      const response = await axios.get("http://localhost:8080/api/department/all");
+      setDepartments(response.data?.data || response.data || []);
     } catch (err) {
       console.error("Error fetching departments:", err);
     }
@@ -32,8 +32,8 @@ const AddCourseForm = ({ onCourseAdded }) => {
 
   const fetchFaculties = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/admin/faculty");
-      setFaculties(response.data);
+      const response = await axios.get("http://localhost:8080/api/faculty/all");
+      setFaculties(response.data?.data || response.data || []);
     } catch (err) {
       console.error("Error fetching faculties:", err);
     }
@@ -52,36 +52,36 @@ const AddCourseForm = ({ onCourseAdded }) => {
       !courseData.courseName ||
       !courseData.courseCode ||
       !courseData.credits ||
-      !courseData.departmentId ||
+      !courseData.deptId ||
       !courseData.facultyId ||
-      !courseData.maxStudents
+      !courseData.maxCapacity
     ) {
       setError("Please fill in all fields.");
       return;
     }
 
     const credits = parseInt(courseData.credits, 10);
-    const maxStudents = parseInt(courseData.maxStudents, 10);
+    const maxCapacity = parseInt(courseData.maxCapacity, 10);
 
     if (Number.isNaN(credits) || credits <= 0) {
       setError("Credits must be a positive number.");
       return;
     }
 
-    if (Number.isNaN(maxStudents) || maxStudents <= 0) {
-      setError("Maximum students must be a positive number.");
+    if (Number.isNaN(maxCapacity) || maxCapacity <= 0) {
+      setError("Maximum capacity must be a positive number.");
       return;
     }
 
     setLoading(true);
 
     try {
-      await axios.post("http://localhost:8080/api/admin/addcourse", {
+      await axios.post("http://localhost:8080/api/course/add", {
         ...courseData,
         credits,
-        departmentId: parseInt(courseData.departmentId, 10),
+        deptId: parseInt(courseData.deptId, 10),
         facultyId: parseInt(courseData.facultyId, 10),
-        maxStudents,
+        maxCapacity,
       });
 
       setMessage("Course added successfully!");
@@ -89,16 +89,17 @@ const AddCourseForm = ({ onCourseAdded }) => {
         courseName: "",
         courseCode: "",
         credits: "",
-        departmentId: "",
+        deptId: "",
         facultyId: "",
-        maxStudents: "",
+        maxCapacity: "",
       });
 
       if (onCourseAdded) {
         onCourseAdded();
       }
     } catch (err) {
-      setError(err.response?.data || "Error adding course.");
+      const errorMsg = err.response?.data?.message || err.message || "Error adding course.";
+      setError(typeof errorMsg === 'string' ? errorMsg : "Error adding course.");
     } finally {
       setLoading(false);
     }
@@ -178,8 +179,8 @@ const AddCourseForm = ({ onCourseAdded }) => {
                 id="course-capacity"
                 className="ums-input"
                 type="number"
-                name="maxStudents"
-                value={courseData.maxStudents}
+                name="maxCapacity"
+                value={courseData.maxCapacity}
                 onChange={handleChange}
                 placeholder="Set enrollment capacity"
                 min="1"
@@ -194,15 +195,15 @@ const AddCourseForm = ({ onCourseAdded }) => {
               <select
                 id="course-department"
                 className="ums-select"
-                name="departmentId"
-                value={courseData.departmentId}
+                name="deptId"
+                value={courseData.deptId}
                 onChange={handleChange}
                 required
               >
                 <option value="">Select Department</option>
                 {departments.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.name}
+                  <option key={dept.deptId || dept.id} value={dept.deptId || dept.id}>
+                    {dept.deptName || dept.name}
                   </option>
                 ))}
               </select>
@@ -222,8 +223,8 @@ const AddCourseForm = ({ onCourseAdded }) => {
               >
                 <option value="">Select Faculty</option>
                 {faculties.map((faculty) => (
-                  <option key={faculty.id} value={faculty.id}>
-                    {faculty.name}
+                  <option key={faculty.facultyId || faculty.id} value={faculty.facultyId || faculty.id}>
+                    {faculty.name || faculty.fullName}
                   </option>
                 ))}
               </select>

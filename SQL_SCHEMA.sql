@@ -1,14 +1,14 @@
--- ============================================
+
 -- UNIVERSITY MANAGEMENT SYSTEM DATABASE SCHEMA
--- ============================================
+
 
 -- Step 1: Create Database
 CREATE DATABASE IF NOT EXISTS university_ms;
 USE university_ms;
 
--- ============================================
+
 -- TABLE 1: ADMIN
--- ============================================
+
 CREATE TABLE admin (
     admin_id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -20,9 +20,9 @@ CREATE TABLE admin (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB ;
 
--- ============================================
+
 -- TABLE 2: DEPARTMENT
--- ============================================
+
 CREATE TABLE department (
     dept_id INT PRIMARY KEY AUTO_INCREMENT,
     dept_name VARCHAR(100) NOT NULL UNIQUE,
@@ -33,9 +33,9 @@ CREATE TABLE department (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- ============================================
+
 -- TABLE 3: FACULTY
--- ============================================
+
 CREATE TABLE faculty (
     faculty_id INT PRIMARY KEY AUTO_INCREMENT,
     emp_id VARCHAR(20) UNIQUE NOT NULL,
@@ -52,9 +52,9 @@ CREATE TABLE faculty (
     FOREIGN KEY (dept_id) REFERENCES department(dept_id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
--- ============================================
+
 -- TABLE 4: COURSE
--- ============================================
+
 CREATE TABLE course (
     course_id INT PRIMARY KEY AUTO_INCREMENT,
     course_code VARCHAR(10) UNIQUE NOT NULL,
@@ -71,9 +71,9 @@ CREATE TABLE course (
     FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- ============================================
+
 -- TABLE 5: STUDENT
--- ============================================
+
 CREATE TABLE student (
     student_id INT PRIMARY KEY AUTO_INCREMENT,
     roll_number VARCHAR(20) UNIQUE NOT NULL,
@@ -92,9 +92,9 @@ CREATE TABLE student (
     FOREIGN KEY (dept_id) REFERENCES department(dept_id)
 ) ENGINE=InnoDB;
 
--- ============================================
+
 -- TABLE 6: ENROLLMENT
--- ============================================
+
 CREATE TABLE enrollment (
     enrollment_id INT PRIMARY KEY AUTO_INCREMENT,
     student_id INT NOT NULL,
@@ -107,9 +107,9 @@ CREATE TABLE enrollment (
     FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- ============================================
+
 -- TABLE 7: ATTENDANCE
--- ============================================
+
 CREATE TABLE attendance (
     attendance_id INT PRIMARY KEY AUTO_INCREMENT,
     student_id INT NOT NULL,
@@ -123,9 +123,9 @@ CREATE TABLE attendance (
     FOREIGN KEY (recorded_by) REFERENCES faculty(faculty_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- ============================================
+
 -- TABLE 8: MARKS
--- ============================================
+
 CREATE TABLE marks (
     marks_id INT PRIMARY KEY AUTO_INCREMENT,
     student_id INT NOT NULL,
@@ -143,9 +143,11 @@ CREATE TABLE marks (
     FOREIGN KEY (recorded_by) REFERENCES faculty(faculty_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- ============================================
+
+
+
 -- INDEXES FOR OPTIMIZATION
--- ============================================
+
 CREATE INDEX idx_student_dept ON student(dept_id);
 CREATE INDEX idx_student_status ON student(status);
 CREATE INDEX idx_student_roll ON student(roll_number);
@@ -162,15 +164,15 @@ CREATE INDEX idx_attendance_date ON attendance(date);
 CREATE INDEX idx_enrollment_student ON enrollment(student_id);
 CREATE INDEX idx_enrollment_course ON enrollment(course_id);
 
--- ============================================
+
 -- INSERT DEFAULT ADMIN USER
--- ============================================
+
 INSERT INTO admin (username, password, email, name, phone) 
 VALUES ('admin', 'admin@123', 'admin@university.edu', 'System Administrator', '1234567890') ;
 
--- ============================================
+
 -- INSERT SAMPLE DEPARTMENTS
--- ============================================
+
 INSERT INTO department (dept_name, dept_code, hod_name, email, phone) 
 VALUES 
     ('Computer Science and Engineering', 'CSE', 'Dr. Ramesh Kumar', 'hod.cse@university.edu', '9876543210'),
@@ -178,9 +180,9 @@ VALUES
     ('Mechanical Engineering', 'ME', 'Dr. Arun Patel', 'hod.me@university.edu', '9876543212'),
     ('Civil Engineering', 'CE', 'Dr. Rekha Sharma', 'hod.ce@university.edu', '9876543213');
 
--- ============================================
+
 -- INSERT SAMPLE FACULTY
--- ============================================
+
 INSERT INTO faculty (emp_id, name, email, phone, dept_id, password, qualification, specialization, date_of_joining, status) 
 VALUES 
     ('CSE001', 'Prof. Sharma', 'sharma@university.edu', '9876543220', 1, 'prof@123', 'M.Tech', 'Data Science', '2015-06-15', 'Active'),
@@ -189,9 +191,9 @@ VALUES
     ('ME001', 'Prof. Verma', 'verma@university.edu', '9876543223', 3, 'prof@123', 'M.Tech', 'CAD/CAM', '2017-05-25', 'Active'),
     ('CE001', 'Prof. Kumar', 'kumar@university.edu', '9876543224', 4, 'prof@123', 'M.Tech', 'Structural Analysis', '2016-03-15', 'Active');
 
--- ============================================
+
 -- INSERT SAMPLE COURSES
--- ============================================
+
 INSERT INTO course (course_code, course_name, dept_id, faculty_id, credits, max_capacity, semester, year) 
 VALUES 
     ('CS101', 'Data Structures', 1, 1, 4, 60, 2, 1),
@@ -205,9 +207,9 @@ VALUES
     ('CE101', 'Structural Analysis', 4, 5, 4, 60, 2, 1),
     ('CE102', 'Building Planning', 4, 5, 4, 60, 2, 1);
 
--- ============================================
+
 -- INSERT SAMPLE STUDENTS
--- ============================================
+
 INSERT INTO student (roll_number, name, email, phone, date_of_birth, gender, dept_id, password, admission_date, semester, status, cgpa) 
 VALUES 
     ('CSE001', 'Ravi Kumar', 'ravi@university.edu', '9123456789', '2004-05-15', 'Male', 1, 'student@123', '2022-08-01', 2, 'Active', 3.75),
@@ -221,9 +223,9 @@ VALUES
     ('ME002', 'Aditya Reddy', 'aditya@university.edu', '9123456797', '2004-08-30', 'Male', 3, 'student@123', '2022-08-01', 2, 'Active', 3.40),
     ('CE001', 'Divya Nair', 'divya@university.edu', '9123456798', '2004-01-18', 'Female', 4, 'student@123', '2022-08-01', 2, 'Active', 3.80);
 
--- ============================================
+
 -- INSERT SAMPLE ENROLLMENTS
--- ============================================
+
 INSERT INTO enrollment (student_id, course_id, status) 
 VALUES 
     (1, 1, 'Enrolled'), (1, 2, 'Enrolled'), (1, 3, 'Enrolled'),
@@ -237,9 +239,9 @@ VALUES
     (9, 7, 'Enrolled'), (9, 8, 'Enrolled'),
     (10, 9, 'Enrolled'), (10, 10, 'Enrolled');
 
--- ============================================
+
 -- INSERT SAMPLE MARKS
--- ============================================
+
 INSERT INTO marks (student_id, course_id, internal_marks, external_marks, total_marks, grade, recorded_by) 
 VALUES 
     (1, 1, 25, 65, 90, 'A', 1), (1, 2, 24, 63, 87, 'A', 1), (1, 3, 23, 60, 83, 'B', 2),
@@ -253,9 +255,9 @@ VALUES
     (9, 7, 19, 55, 74, 'C', 4), (9, 8, 18, 52, 70, 'C', 4),
     (10, 9, 24, 65, 89, 'A', 5), (10, 10, 23, 63, 86, 'A', 5);
 
--- ============================================
+
 -- INSERT SAMPLE ATTENDANCE (Last 30 days)
--- ============================================
+
 INSERT INTO attendance (student_id, course_id, date, status, recorded_by) 
 VALUES 
     (1, 1, '2024-10-01', 'Present', 1), (1, 1, '2024-10-02', 'Present', 1), (1, 1, '2024-10-03', 'Absent', 1),
@@ -265,9 +267,9 @@ VALUES
     (3, 1, '2024-10-01', 'Present', 1), (3, 1, '2024-10-02', 'Absent', 1), (3, 1, '2024-10-03', 'Absent', 1),
     (3, 1, '2024-10-04', 'Present', 1), (3, 1, '2024-10-05', 'Present', 1);
 
--- ============================================
+
 -- VERIFICATION QUERIES
--- ============================================
+
 -- Verify data insertion
 SELECT COUNT(*) as admin_count FROM admin;
 SELECT COUNT(*) as department_count FROM department;

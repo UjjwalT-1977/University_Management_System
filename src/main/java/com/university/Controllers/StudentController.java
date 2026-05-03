@@ -42,6 +42,21 @@ public class StudentController {
         Map<String, Object> response = new HashMap<>();
 
         try {
+            String validationMsg = studentService.validateStudentData(student);
+            if (!"VALID".equals(validationMsg)) {
+                response.put("status", "error");
+                response.put("message", validationMsg);
+                response.put("data", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+
+            if (studentService.getStudentByRollNumber(student.getRollNumber()) != null) {
+                response.put("status", "error");
+                response.put("message", "Roll number already exists.");
+                response.put("data", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+
             boolean success = studentService.registerStudent(student);
 
             if (success) {
@@ -51,7 +66,7 @@ public class StudentController {
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
             } else {
                 response.put("status", "error");
-                response.put("message", "Failed to add student. Check validation errors.");
+                response.put("message", "Failed to add student. Check validation errors or database constraints.");
                 response.put("data", null);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }

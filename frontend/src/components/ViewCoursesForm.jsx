@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
-const COURSES_API_URL = "http://localhost:8080/api/courses";
-const DEPARTMENTS_API_URL = "http://localhost:8080/api/departments";
-const FACULTY_API_URL = "http://localhost:8080/api/faculty";
+const COURSES_API_URL = "http://localhost:8080/api/course/all";
+const DEPARTMENTS_API_URL = "http://localhost:8080/api/department/all";
+const FACULTY_API_URL = "http://localhost:8080/api/faculty/all";
 
 const priorityOrder = [
   "courseId",
@@ -126,9 +126,9 @@ function ViewCoursesForm({ refreshKey }) {
         axios.get(FACULTY_API_URL),
       ]);
 
-      setCourses(coursesResponse.data);
-      setDepartments(departmentsResponse.data);
-      setFacultyList(facultyResponse.data);
+      setCourses(coursesResponse.data?.data || coursesResponse.data || []);
+      setDepartments(departmentsResponse.data?.data || departmentsResponse.data || []);
+      setFacultyList(facultyResponse.data?.data || facultyResponse.data || []);
       setError("");
     } catch (err) {
       console.error("Error fetching course data:", err);
@@ -188,7 +188,7 @@ function ViewCoursesForm({ refreshKey }) {
   const handleSaveClick = async () => {
     try {
       const courseId = getCourseId(editedCourse);
-      await axios.put(`${COURSES_API_URL}/${courseId}`, editedCourse);
+      await axios.put(`http://localhost:8080/api/course/update/${courseId}`, editedCourse);
       setEditingId(null);
       setEditedCourse({});
       setSuccessMessage("Course updated successfully.");
@@ -211,7 +211,7 @@ function ViewCoursesForm({ refreshKey }) {
     }
 
     try {
-      await axios.delete(`${COURSES_API_URL}/${courseId}`);
+      await axios.delete(`http://localhost:8080/api/course/delete/${courseId}`);
       setCourses((prev) => prev.filter((course) => getCourseId(course) !== courseId));
       if (editingId === courseId) {
         handleCancelEdit();

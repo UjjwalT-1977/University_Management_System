@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/faculty";
+const API_URL = "http://localhost:8080/api/faculty/all";
 
 const priorityOrder = [
   "facultyId",
@@ -97,7 +97,7 @@ function FacultyList({ refreshKey }) {
   const fetchFaculty = async () => {
     try {
       const response = await axios.get(API_URL);
-      setFacultyList(response.data);
+      setFacultyList(response.data?.data || response.data || []);
       setError("");
     } catch (err) {
       console.error("Error fetching faculty:", err);
@@ -132,7 +132,7 @@ function FacultyList({ refreshKey }) {
   const handleSaveClick = async () => {
     try {
       const facultyId = getFacultyId(editedFaculty);
-      await axios.put(`${API_URL}/${facultyId}`, editedFaculty);
+      await axios.put(`http://localhost:8080/api/faculty/update/${facultyId}`, editedFaculty);
       setEditingId(null);
       setEditedFaculty({});
       setSuccessMessage("Faculty record updated successfully.");
@@ -155,7 +155,7 @@ function FacultyList({ refreshKey }) {
     }
 
     try {
-      await axios.delete(`${API_URL}/${facultyId}`);
+      await axios.delete(`http://localhost:8080/api/faculty/delete/${facultyId}`);
       setFacultyList((prev) =>
         prev.filter((faculty) => getFacultyId(faculty) !== facultyId)
       );

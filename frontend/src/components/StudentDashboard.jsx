@@ -1,9 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import '../App.css'; 
 
 export default function StudentDashboard({ authData }) {
     const navigate = useNavigate();
+    
+    // ================= STATE =================
     const [activeTab, setActiveTab] = useState('overview');
     const [studentInfo, setStudentInfo] = useState(null);
     const [enrolledCourses, setEnrolledCourses] = useState([]);
@@ -13,9 +16,11 @@ export default function StudentDashboard({ authData }) {
     const [allCourses, setAllCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [availableQuizzes, setAvailableQuizzes] = useState([]);
 
-    const studentId = authData?.user?.id || 1; // Fallback ID for testing
+    const studentId = authData?.user?.id || 1; 
 
+    // ================= DATA FETCHING =================
     useEffect(() => {
         fetchAllData();
     }, []);
@@ -25,45 +30,53 @@ export default function StudentDashboard({ authData }) {
             setLoading(true);
             setError('');
 
-            // Fetch student info
             const studentRes = await axios.get(`http://localhost:8080/api/student/${studentId}`);
             setStudentInfo(studentRes.data.data);
 
-            // Fetch enrolled courses
             const enrollRes = await axios.get(`http://localhost:8080/api/enrollment/student/${studentId}`);
             const enrolledData = enrollRes.data.data || [];
             setEnrolledCourses(enrolledData);
 
-            // Fetch all courses
             const allCoursesRes = await axios.get(`http://localhost:8080/api/course/all`);
             setAllCourses(allCoursesRes.data.data || []);
 
-            // Fetch course details for all enrolled courses
+            // Fetch Course Details AND Quizzes
             if (enrolledData.length > 0) {
                 const courseDetailsMap = {};
+                let fetchedQuizzes = [];
+
                 for (const enrollment of enrolledData) {
                     try {
                         const courseRes = await axios.get(`http://localhost:8080/api/course/${enrollment.courseId}`);
                         courseDetailsMap[enrollment.courseId] = courseRes.data.data;
+
+                        // Fetch quizzes for this specific enrolled course
+                        const quizRes = await axios.get(`http://localhost:8080/api/quiz/course/${enrollment.courseId}`);
+                        if (quizRes.data.data && quizRes.data.data.length > 0) {
+                            const quizzesWithCourseInfo = quizRes.data.data.map(q => ({
+                                ...q,
+                                courseName: courseRes.data.data.courseName,
+                                courseCode: courseRes.data.data.courseCode
+                            }));
+                            fetchedQuizzes = [...fetchedQuizzes, ...quizzesWithCourseInfo];
+                        }
+
                     } catch (err) {
-                        console.error(`Failed to fetch course ${enrollment.courseId}:`, err);
-                        courseDetailsMap[enrollment.courseId] = { courseName: 'Unknown Course', courseCode: 'N/A' };
+                        console.error(`Failed to fetch course data for ${enrollment.courseId}:`, err);
                     }
                 }
                 setCourseDetails(courseDetailsMap);
+                setAvailableQuizzes(fetchedQuizzes);
             }
 
-            // Fetch attendance
             const attRes = await axios.get(`http://localhost:8080/api/attendance/student/${studentId}`);
             setAttendance(attRes.data.data || []);
 
-            // Fetch marks
             const marksRes = await axios.get(`http://localhost:8080/api/marks/student/${studentId}`);
             setMarks(marksRes.data.data || []);
 
         } catch (err) {
-            setError('Failed to load dashboard data: ' + (err.response?.data?.message || err.message));
-            console.error('Dashboard Error:', err);
+            setError('Failed to load data: ' + (err.response?.data?.message || err.message));
         } finally {
             setLoading(false);
         }
@@ -76,315 +89,328 @@ export default function StudentDashboard({ authData }) {
 
     const refreshMarks = async () => {
         try {
-            console.log('Refreshing marks...');
             const marksRes = await axios.get(`http://localhost:8080/api/marks/student/${studentId}`);
-            console.log('Refreshed marks:', marksRes.data);
             setMarks(marksRes.data.data || []);
             setError('');
         } catch (err) {
-            console.error('Error refreshing marks:', err);
             setError('Failed to refresh marks: ' + err.message);
         }
     };
 
-    const styles = {
-        container: { padding: '20px', fontFamily: 'Arial, sans-serif' },
-        header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #007bff', paddingBottom: '15px' },
-        tabs: { display: 'flex', gap: '10px', marginBottom: '20px' },
-        tab: { padding: '10px 20px', border: '1px solid #ddd', backgroundColor: '#f5f5f5', cursor: 'pointer', borderRadius: '4px' },
-        tabActive: { backgroundColor: '#007bff', color: 'white', border: '1px solid #007bff' },
-        card: { backgroundColor: '#f9f9f9', padding: '15px', marginBottom: '15px', borderRadius: '4px', border: '1px solid #ddd' },
-        Section: { marginBottom: '25px' },
-        table: { width: '100%', borderCollapse: 'collapse', backgroundColor: 'white' },
-        th: { backgroundColor: '#007bff', color: 'white', padding: '10px', textAlign: 'left' },
-        td: { padding: '10px', borderBottom: '1px solid #ddd' },
-        button: { padding: '8px 16px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' },
-        infoGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' },
-        infoCard: { backgroundColor: '#e7f3ff', padding: '15px', borderRadius: '4px', border: '1px solid #b3d9ff' }
+    const getGradeBadgeClass = (grade) => {
+        if (grade === 'A') return 'ums-badge--success';
+        if (grade === 'B') return 'ums-badge--info';
+        if (grade === 'C') return 'ums-badge--warning';
+        return 'ums-badge--danger';
     };
 
-    if (loading) return <div style={styles.container}><p className="ums-subtitle">Loading dashboard...</p></div>;
+    if (loading) return (
+        <div className="ums-page flex-center" style={{ minHeight: '100vh' }}>
+            <h2 style={{ color: 'var(--color-primary)' }}>Loading dashboard...</h2>
+        </div>
+    );
 
     return (
-    <div className="ums-page ums-shell">
-            {/* Header */}
-            <div style={styles.header}>
-                <h1 className="ums-title">Student Dashboard</h1>
-                <button className="ums-btn ums-btn--danger" onClick={handleLogout}>Logout</button>
-            </div>
+        <div className="ums-page">
+            <div className="ums-shell">
+                
+                {/* Header Area */}
+                <header className="ums-dashboard-header">
+                    <div>
+                        <h1>📚 Student Dashboard</h1>
+                        <p className="mb-0 text-left">Welcome to your academic portal</p>
+                    </div>
+                    <button className="ums-btn ums-btn--danger" onClick={handleLogout}>
+                        🚪 Logout
+                    </button>
+                </header>
 
-            {/* Error Message */}
-            {error && <div className="ums-alert ums-alert--error">{error}</div>}
+                {error && <div className="ums-alert ums-alert--error mt-3">⚠️ {error}</div>}
 
-            {/* Tabs */}
-            <div style={styles.tabs}>
-                <button className={activeTab === 'overview' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
-                   
-                    
-                 onClick={() => setActiveTab('overview')}>
-                    Overview
-                </button>
-                <button className={activeTab === 'courses' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
-                   
-                    
-                 onClick={() => setActiveTab('courses')}>
-                    My Courses
-                </button>
-                <button className={activeTab === 'availableCourses' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
-                   
-                    
-                 onClick={() => setActiveTab('availableCourses')}>
-                    Available Courses
-                </button>
-                <button className={activeTab === 'attendance' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
-                   
-                    
-                 onClick={() => setActiveTab('attendance')}>
-                    Attendance
-                </button>
-                <button className={activeTab === 'marks' ? 'ums-tab ums-tab--active' : 'ums-tab'} 
-                   
-                    
-                 onClick={() => setActiveTab('marks')}>
-                    Marks & Grades
-                </button>
-            </div>
+                {/* Tab Navigation */}
+                <div className="ums-tabs mt-4 mb-4" style={{ flexWrap: 'wrap' }}>
+                    <button className={`ums-tab ${activeTab === 'overview' ? 'ums-tab--active' : ''}`} onClick={() => setActiveTab('overview')}>Overview</button>
+                    <button className={`ums-tab ${activeTab === 'courses' ? 'ums-tab--active' : ''}`} onClick={() => setActiveTab('courses')}>My Courses</button>
+                    <button className={`ums-tab ${activeTab === 'availableCourses' ? 'ums-tab--active' : ''}`} onClick={() => setActiveTab('availableCourses')}>Available Courses</button>
+                    <button className={`ums-tab ${activeTab === 'attendance' ? 'ums-tab--active' : ''}`} onClick={() => setActiveTab('attendance')}>Attendance</button>
+                    <button className={`ums-tab ${activeTab === 'marks' ? 'ums-tab--active' : ''}`} onClick={() => setActiveTab('marks')}>Marks & Grades</button>
+                    <button className={`ums-tab ${activeTab === 'quizzes' ? 'ums-tab--active' : ''}`} onClick={() => setActiveTab('quizzes')}>📝 My Quizzes</button>
+                </div>
 
-            {/* TAB: OVERVIEW */}
-            {activeTab === 'overview' && (
-                <div style={styles.Section}>
-                    <h2 className="ums-title">Student Information</h2>
-                    {studentInfo && (
-                        <div style={styles.infoGrid}>
-                            <div style={styles.infoCard}>
-                                <strong>Name:</strong> <p>{studentInfo.name}</p>
+                {/* ================= OVERVIEW TAB ================= */}
+                {activeTab === 'overview' && (
+                    <div className="ums-panel text-left">
+                        <h2 className="mb-3">Student Information</h2>
+                        
+                        {studentInfo && (
+                            <div className="ums-info-box-grid mb-4">
+                                <div className="ums-info-item">
+                                    <span className="ums-info-item-label">Name</span>
+                                    <span className="ums-info-item-value">{studentInfo.name}</span>
+                                </div>
+                                <div className="ums-info-item">
+                                    <span className="ums-info-item-label">Roll Number</span>
+                                    <span className="ums-info-item-value">{studentInfo.rollNumber}</span>
+                                </div>
+                                <div className="ums-info-item">
+                                    <span className="ums-info-item-label">Email</span>
+                                    <span className="ums-info-item-value">{studentInfo.email}</span>
+                                </div>
+                                <div className="ums-info-item">
+                                    <span className="ums-info-item-label">Department ID</span>
+                                    <span className="ums-info-item-value">{studentInfo.deptId}</span>
+                                </div>
+                                <div className="ums-info-item">
+                                    <span className="ums-info-item-label">CGPA</span>
+                                    <span className="ums-info-item-value">{studentInfo.cgpa?.toFixed(2) || 'N/A'}</span>
+                                </div>
+                                <div className="ums-info-item">
+                                    <span className="ums-info-item-label">Status</span>
+                                    <span className="ums-badge ums-badge--success mt-1" style={{ width: 'fit-content' }}>
+                                        {studentInfo.status || 'Active'}
+                                    </span>
+                                </div>
                             </div>
-                            <div style={styles.infoCard}>
-                                <strong>Roll Number:</strong> <p>{studentInfo.rollNumber}</p>
-                            </div>
-                            <div style={styles.infoCard}>
-                                <strong>Email:</strong> <p>{studentInfo.email}</p>
-                            </div>
-                            <div style={styles.infoCard}>
-                                <strong>Department ID:</strong> <p>{studentInfo.deptId}</p>
-                            </div>
-                            <div style={styles.infoCard}>
-                                <strong>CGPA:</strong> <p>{studentInfo.cgpa?.toFixed(2) || 'N/A'}</p>
-                            </div>
-                            <div style={styles.infoCard}>
-                                <strong>Status:</strong> <p>{studentInfo.status || 'Active'}</p>
-                            </div>
-                        </div>
-                    )}
+                        )}
 
-                    <h2 style={{ marginTop: '30px' }}>Quick Stats</h2>
-                    <div style={styles.infoGrid}>
-                        <div style={styles.infoCard}>
-                            <strong>Enrolled Courses:</strong> <p style={{ fontSize: '24px', color: '#007bff' }}>{enrolledCourses.length}</p>
-                        </div>
-                        <div style={styles.infoCard}>
-                            <strong>Attendance Records:</strong> <p style={{ fontSize: '24px', color: '#28a745' }}>{attendance.length}</p>
-                        </div>
-                        <div style={styles.infoCard}>
-                            <strong>Marks Records:</strong> <p style={{ fontSize: '24px', color: '#ffc107' }}>{marks.length}</p>
+                        <h2 className="mt-4 mb-3">Quick Stats</h2>
+                        <div className="ums-stats-grid">
+                            <div className="ums-stat-card" style={{ borderTop: '4px solid var(--color-primary)' }}>
+                                <span className="ums-stat-label">Enrolled Courses</span>
+                                <span className="ums-stat-value">{enrolledCourses.length}</span>
+                            </div>
+                            <div className="ums-stat-card" style={{ borderTop: '4px solid var(--color-success)' }}>
+                                <span className="ums-stat-label">Attendance Records</span>
+                                <span className="ums-stat-value">{attendance.length}</span>
+                            </div>
+                            <div className="ums-stat-card" style={{ borderTop: '4px solid var(--color-warning)' }}>
+                                <span className="ums-stat-label">Marks Records</span>
+                                <span className="ums-stat-value">{marks.length}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* TAB: MY COURSES */}
-            {activeTab === 'courses' && (
-                <div style={styles.Section}>
-                    <h2>Enrolled Courses</h2>
-                    {enrolledCourses.length > 0 ? (
-                        <div className="ums-table-wrap"><table className="ums-table">
-                            <thead>
-                                <tr>
-                                    <th style={styles.th}>Course Code</th>
-                                    <th style={styles.th}>Course Name</th>
-                                    <th style={styles.th}>Enrollment Date</th>
-                                    <th style={styles.th}>CGPA at Enrollment</th>
-                                    <th style={styles.th}>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {enrolledCourses.map((course) => {
-                                    const courseInfo = courseDetails[course.courseId] || {};
-                                    return (
-                                        <tr key={course.enrollmentId}>
-                                            <td style={styles.td}>{courseInfo.courseCode || 'N/A'}</td>
-                                            <td style={styles.td}>{courseInfo.courseName || 'Unknown Course'}</td>
-                                            <td style={styles.td}>{course.enrollmentDate}</td>
-                                            <td style={styles.td}>{course.cgpaAtEnrollment?.toFixed(2)}</td>
-                                            <td style={styles.td}>
-                                                <span style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: course.status === 'Enrolled' ? '#d4edda' : '#f8d7da', color: course.status === 'Enrolled' ? '#155724' : '#721c24' }}>
-                                                    {course.status}
-                                                </span>
-                                            </td>
+                {/* ================= ENROLLED COURSES TAB ================= */}
+                {activeTab === 'courses' && (
+                    <div className="ums-panel text-left">
+                        <h2 className="mb-3">Enrolled Courses</h2>
+                        {enrolledCourses.length > 0 ? (
+                            <div className="ums-table-container">
+                                <table className="ums-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Course Code</th>
+                                            <th>Course Name</th>
+                                            <th>Enrollment Date</th>
+                                            <th>CGPA at Enrollment</th>
+                                            <th>Status</th>
                                         </tr>
+                                    </thead>
+                                    <tbody>
+                                        {enrolledCourses.map((course) => {
+                                            const courseInfo = courseDetails[course.courseId] || {};
+                                            return (
+                                                <tr key={course.enrollmentId}>
+                                                    <td><strong>{courseInfo.courseCode || 'N/A'}</strong></td>
+                                                    <td>{courseInfo.courseName || 'Unknown Course'}</td>
+                                                    <td>{course.enrollmentDate}</td>
+                                                    <td>{course.cgpaAtEnrollment?.toFixed(2)}</td>
+                                                    <td>
+                                                        <span className={`ums-badge ${course.status === 'Enrolled' ? 'ums-badge--success' : 'ums-badge--danger'}`}>
+                                                            {course.status}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <p className="text-left">No courses enrolled yet.</p>
+                        )}
+                    </div>
+                )}
+
+                {/* ================= AVAILABLE COURSES TAB ================= */}
+                {activeTab === 'availableCourses' && (
+                    <div className="ums-panel text-left">
+                        <h2 className="mb-3">Available Courses</h2>
+                        <div className="ums-alert ums-alert--info mb-4">
+                            📌 Note: To enroll in a course, please contact your admin.
+                        </div>
+                        
+                        {allCourses && allCourses.length > 0 ? (
+                            <div className="ums-grid">
+                                {allCourses.map((course) => {
+                                    const isEnrolled = enrolledCourses.some(ec => ec.courseId === course.courseId);
+                                    return (
+                                        <div key={course.courseId} className={`ums-card ${isEnrolled ? 'ums-panel--light' : ''}`}>
+                                            <div className="flex-between mb-3">
+                                                <div>
+                                                    <h4 className="mb-1">{course.courseName}</h4>
+                                                    <span className="ums-badge ums-badge--gray">{course.courseCode}</span>
+                                                </div>
+                                                {isEnrolled && (
+                                                    <span className="ums-badge ums-badge--success">✓ Enrolled</span>
+                                                )}
+                                            </div>
+                                            <div className="ums-info-item mt-3 pt-3" style={{ borderTop: '1px solid var(--color-border)' }}>
+                                                <div className="flex-between mb-2">
+                                                    <span className="ums-info-item-label">Credits</span>
+                                                    <strong>{course.credits}</strong>
+                                                </div>
+                                                <div className="flex-between mb-2">
+                                                    <span className="ums-info-item-label">Capacity</span>
+                                                    <strong>{course.maxCapacity}</strong>
+                                                </div>
+                                                <div className="flex-between mb-1">
+                                                    <span className="ums-info-item-label">Semester / Year</span>
+                                                    <strong>{course.semester} / {course.year}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
                                     );
                                 })}
-                            </tbody>
-                        </table></div>
-                    ) : (
-                        <p>No courses enrolled yet.</p>
-                    )}
-                </div>
-            )}
+                            </div>
+                        ) : (
+                            <p className="text-left">No courses available at the moment.</p>
+                        )}
+                    </div>
+                )}
 
-            {/* TAB: AVAILABLE COURSES */}
-            {activeTab === 'availableCourses' && (
-                <div style={styles.Section}>
-                    <h2>Available Courses</h2>
-                    <p style={{ color: '#666' }}>📌 Note: To enroll in a course, please contact your admin.</p>
-                    {allCourses && allCourses.length > 0 ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-                            {allCourses.map((course) => {
-                                const isEnrolled = enrolledCourses.some(ec => ec.courseId === course.courseId);
-                                return (
-                                    <div key={course.courseId} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: isEnrolled ? '#e8f5e9' : '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '10px' }}>
+                {/* ================= ATTENDANCE TAB ================= */}
+                {activeTab === 'attendance' && (
+                    <div className="ums-panel text-left">
+                        <h2 className="mb-3">Attendance Records</h2>
+                        {attendance.length > 0 ? (
+                            <div className="ums-table-container">
+                                <table className="ums-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Course ID</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Recorded By</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {attendance.map((att) => (
+                                            <tr key={att.attendanceId}>
+                                                <td><strong>{att.courseId}</strong></td>
+                                                <td>{att.date || att.attendanceDate}</td>
+                                                <td>
+                                                    <span className={`ums-badge ${att.status === 'Present' ? 'ums-badge--success' : att.status === 'Leave' ? 'ums-badge--warning' : 'ums-badge--danger'}`}>
+                                                        {att.status}
+                                                    </span>
+                                                </td>
+                                                <td>{att.recordedBy || 'System'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <p className="text-left">No attendance records yet.</p>
+                        )}
+                    </div>
+                )}
+
+                {/* ================= MARKS TAB ================= */}
+                {activeTab === 'marks' && (
+                    <div className="ums-panel text-left">
+                        <div className="flex-between mb-4">
+                            <h2 className="mb-0">Marks & Grades</h2>
+                            <button className="ums-btn ums-btn--primary" onClick={refreshMarks}>
+                                🔄 Refresh
+                            </button>
+                        </div>
+                        {marks.length > 0 ? (
+                            <div className="ums-table-container">
+                                <table className="ums-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Course Code</th>
+                                            <th>Course Name</th>
+                                            <th className="text-center" title="Internal Assessment (Max 30)">Internal⁕</th>
+                                            <th className="text-center" title="External Exam (Max 70)">External⁕</th>
+                                            <th className="text-center" title="Total Marks (Max 100)">Total⁕</th>
+                                            <th className="text-center">Percentage</th>
+                                            <th className="text-center">Grade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {marks.map((mark) => {
+                                            const courseInfo = courseDetails[mark.courseId] || {};
+                                            const percentage = mark.totalMarks ? ((mark.totalMarks / 100) * 100).toFixed(2) : 0;
+                                            const badgeClass = getGradeBadgeClass(mark.grade);
+                                            
+                                            return (
+                                                <tr key={mark.marksId}>
+                                                    <td><strong>{courseInfo.courseCode || 'N/A'}</strong></td>
+                                                    <td>{courseInfo.courseName || 'Unknown Course'}</td>
+                                                    <td className="text-center">{mark.internalMarks?.toFixed(1) || 0}/30</td>
+                                                    <td className="text-center">{mark.externalMarks?.toFixed(1) || 0}/70</td>
+                                                    <td className="text-center"><strong>{mark.totalMarks?.toFixed(1) || 0}/100</strong></td>
+                                                    <td className="text-center"><strong>{percentage}%</strong></td>
+                                                    <td className="text-center">
+                                                        <span className={`ums-badge ${badgeClass}`}>
+                                                            {mark.grade || 'N/A'}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                                <div className="ums-alert ums-alert--info mt-3 mb-0 p-3">
+                                    <strong>⁕ Grading Scale Note:</strong> Internal (0-30) + External (0-70) = Total (0-100). Typical Grade Boundaries: A ≥ 90 | B ≥ 80 | C ≥ 70 | D ≥ 60 | F &lt; 60
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-left">No marks recorded yet.</p>
+                        )}
+                    </div>
+                )}
+
+                {/* ================= NEW QUIZZES TAB CONTENT ================= */}
+                {activeTab === 'quizzes' && (
+                    <div className="ums-panel text-left">
+                        <h2 className="mb-3">Available Quizzes & Tests</h2>
+                        
+                        {availableQuizzes.length > 0 ? (
+                            <div className="ums-grid">
+                                {availableQuizzes.map((quiz) => (
+                                    <div key={quiz.quizId} className="ums-card" style={{ borderTop: '4px solid #007bff' }}>
+                                        <div className="flex-between mb-3">
                                             <div>
-                                                <h4 style={{ margin: '0 0 5px 0' }}>{course.courseName}</h4>
-                                                <p style={{ margin: '0', color: '#666', fontSize: '12px' }}><strong>Code:</strong> {course.courseCode}</p>
+                                                <h4 className="mb-1">{quiz.title}</h4>
+                                                <span className="ums-badge ums-badge--gray">{quiz.courseCode} - {quiz.courseName}</span>
                                             </div>
-                                            {isEnrolled && (
-                                                <span style={{ backgroundColor: '#28a745', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>✓ Enrolled</span>
-                                            )}
+                                            <span className="ums-badge ums-badge--info">⏱ {quiz.durationMinutes} mins</span>
                                         </div>
-                                        <div style={{ borderTop: '1px solid #eee', paddingTop: '10px', marginTop: '10px' }}>
-                                            <p style={{ margin: '5px 0' }}><strong>Credits:</strong> {course.credits}</p>
-                                            <p style={{ margin: '5px 0' }}><strong>Max Capacity:</strong> {course.maxCapacity} students</p>
-                                            <p style={{ margin: '5px 0' }}><strong>Semester:</strong> {course.semester}</p>
-                                            <p style={{ margin: '5px 0' }}><strong>Year:</strong> {course.year}</p>
-                                            <p style={{ margin: '5px 0' }}><strong>Department ID:</strong> {course.deptId}</p>
+                                        
+                                        <div className="mt-4">
+                                            <button 
+                                                className="ums-btn ums-btn--primary w-100" 
+                                                onClick={() => navigate(`/take-quiz/${quiz.quizId}`, { state: { duration: quiz.durationMinutes, title: quiz.title } })}
+                                            >
+                                                ▶ Start Quiz
+                                            </button>
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <p>No courses available at the moment.</p>
-                    )}
-                </div>
-            )}
-
-            {/* TAB: ATTENDANCE */}
-            {activeTab === 'attendance' && (
-                <div style={styles.Section}>
-                    <h2>Attendance Records</h2>
-                    {attendance.length > 0 ? (
-                        <div className="ums-table-wrap"><table className="ums-table">
-                            <thead>
-                                <tr>
-                                    <th style={styles.th}>Attendance ID</th>
-                                    <th style={styles.th}>Course ID</th>
-                                    <th style={styles.th}>Date</th>
-                                    <th style={styles.th}>Status</th>
-                                    <th style={styles.th}>Recorded By</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {attendance.map((att) => (
-                                    <tr key={att.attendanceId}>
-                                        <td style={styles.td}>{att.attendanceId}</td>
-                                        <td style={styles.td}>{att.courseId}</td>
-                                        <td style={styles.td}>{att.date}</td>
-                                        <td style={styles.td}>
-                                            <span style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: att.status === 'Present' ? '#d4edda' : att.status === 'Leave' ? '#cfe2ff' : '#f8d7da', color: att.status === 'Present' ? '#155724' : att.status === 'Leave' ? '#0c5460' : '#721c24' }}>
-                                                {att.status}
-                                            </span>
-                                        </td>
-                                        <td style={styles.td}>{att.recordedBy}</td>
-                                    </tr>
                                 ))}
-                            </tbody>
-                        </table></div>
-                    ) : (
-                        <p>No attendance records yet.</p>
-                    )}
-                </div>
-            )}
-
-            {/* TAB: MARKS & GRADES */}
-            {activeTab === 'marks' && (
-                <div style={styles.Section}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                        <h2 style={{ margin: 0 }}>Marks & Grades</h2>
-                        <button className="ums-btn ums-btn--primary" 
-                            onClick={refreshMarks}
-                           
-                        >
-                            🔄 Refresh Marks
-                        </button>
+                            </div>
+                        ) : (
+                            <div className="ums-alert ums-alert--info">
+                                🎉 No pending quizzes! Your professors haven't assigned any active quizzes for your enrolled courses yet.
+                            </div>
+                        )}
                     </div>
-                    {marks.length > 0 ? (
-                        <div style={{ overflowX: 'auto' }}>
-                            <div className="ums-table-wrap"><table className="ums-table">
-                                <thead>
-                                    <tr>
-                                        <th style={styles.th}>Course Code</th>
-                                        <th style={styles.th}>Course Name</th>
-                                        <th style={styles.th} title="Internal Assessment (Max 30)">Internal⁕</th>
-                                        <th style={styles.th} title="External Exam (Max 70)">External⁕</th>
-                                        <th style={styles.th} title="Total Marks (Max 100)">Total⁕</th>
-                                        <th style={styles.th}>Percentage</th>
-                                        <th style={styles.th}>Grade</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {marks.map((mark) => {
-                                        const courseInfo = courseDetails[mark.courseId] || {};
-                                        const percentage = ((mark.totalMarks / 100) * 100).toFixed(2);
-                                        
-                                        // Grade color coding: A=Green, B/C=Yellow, D/F=Red
-                                        let gradeColor = '#ffffff';
-                                        let gradeTextColor = '#000000';
-                                        if (mark.grade === 'A') {
-                                            gradeColor = '#28a745';
-                                            gradeTextColor = 'white';
-                                        } else if (mark.grade === 'B') {
-                                            gradeColor = '#ffc107';
-                                            gradeTextColor = 'black';
-                                        } else if (mark.grade === 'C') {
-                                            gradeColor = '#ffc107';
-                                            gradeTextColor = 'black';
-                                        } else if (mark.grade === 'D') {
-                                            gradeColor = '#fd7e14';
-                                            gradeTextColor = 'white';
-                                        } else if (mark.grade === 'F') {
-                                            gradeColor = '#dc3545';
-                                            gradeTextColor = 'white';
-                                        }
-                                        
-                                        return (
-                                            <tr key={mark.marksId} style={{ borderLeft: `5px solid ${gradeColor}` }}>
-                                                <td style={styles.td}><strong>{courseInfo.courseCode || 'N/A'}</strong></td>
-                                                <td style={styles.td}>{courseInfo.courseName || 'Unknown Course'}</td>
-                                                <td style={{ ...styles.td, textAlign: 'center' }}>{mark.internalMarks?.toFixed(1) || 0}/30</td>
-                                                <td style={{ ...styles.td, textAlign: 'center' }}>{mark.externalMarks?.toFixed(1) || 0}/70</td>
-                                                <td style={{ ...styles.td, textAlign: 'center', fontWeight: 'bold' }}>{mark.totalMarks?.toFixed(1) || 0}/100</td>
-                                                <td style={{ ...styles.td, textAlign: 'center' }}>
-                                                    <strong>{percentage}%</strong>
-                                                </td>
-                                                <td style={{ ...styles.td, backgroundColor: gradeColor, color: gradeTextColor, textAlign: 'center', fontWeight: 'bold', borderRadius: '4px' }}>
-                                                    {mark.grade || 'N/A'}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table></div>
-                            <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
-                                ⁕ Internal (0-30) + External (0-70) = Total (0-100)<br/>
-                                Grade: A ≥ 90 | B ≥ 80 | C ≥ 70 | D ≥ 60 | F &lt; 60
-                            </p>
-                        </div>
-                    ) : (
-                        <p>No marks recorded yet.</p>
-                    )}
-                </div>
-            )}
+                )}
+
+            </div>
         </div>
     );
 }

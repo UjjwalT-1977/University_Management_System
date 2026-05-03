@@ -33,20 +33,57 @@ public class StudentService {
      * Core Validation Logic - The "Bouncer"
      */
     public String validateStudentData(Student student) {
+        if (student == null) {
+            return "Student data is required.";
+        }
         if (student.getName() == null || student.getName().trim().isEmpty()) {
             return "Student name cannot be empty.";
+        }
+        if (student.getRollNumber() == null || student.getRollNumber().trim().isEmpty()) {
+            return "Roll number is required.";
         }
         if (student.getEmail() == null || !student.getEmail().contains("@")) {
             return "Invalid email format.";
         }
-        if (student.getPhone() == null || student.getPhone().length() < 10) {
+        if (student.getPhone() == null || student.getPhone().replaceAll("\\D", "").length() < 10) {
             return "Invalid phone number. Must be at least 10 digits.";
         }
-        if (student.getDateOfBirth() != null) {
-            int age = Period.between(student.getDateOfBirth(), LocalDate.now()).getYears();
-            if (age < 16) {
-                return "Student must be at least 16 years old to register.";
-            }
+        if (student.getDeptId() <= 0) {
+            return "A valid Department ID is required.";
+        }
+        if (student.getPassword() == null || student.getPassword().trim().isEmpty()) {
+            return "Password is required.";
+        }
+        if (student.getGender() == null || student.getGender().trim().isEmpty()) {
+            return "Gender is required.";
+        }
+        if (!student.getGender().equals("Male") && !student.getGender().equals("Female") && !student.getGender().equals("Other")) {
+            return "Gender must be Male, Female, or Other.";
+        }
+        if (student.getAdmissionDate() == null) {
+            return "Admission date is required.";
+        }
+        if (student.getAdmissionDate().isAfter(LocalDate.now())) {
+            return "Admission date cannot be in the future.";
+        }
+        if (student.getDateOfBirth() == null) {
+            return "Date of birth is required.";
+        }
+        if (student.getDateOfBirth().isAfter(LocalDate.now())) {
+            return "Date of birth cannot be in the future.";
+        }
+        int age = Period.between(student.getDateOfBirth(), LocalDate.now()).getYears();
+        if (age < 16) {
+            return "Student must be at least 16 years old to register.";
+        }
+        if (student.getAdmissionDate().isBefore(student.getDateOfBirth())) {
+            return "Admission date cannot be before date of birth.";
+        }
+        if (student.getSemester() <= 0) {
+            return "Semester must be a positive number.";
+        }
+        if (student.getCgpa() < 0.0 || student.getCgpa() > 4.0) {
+            return "CGPA must be between 0.0 and 4.0.";
         }
         return "VALID"; 
     }

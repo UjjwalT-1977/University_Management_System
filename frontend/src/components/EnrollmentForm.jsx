@@ -27,8 +27,8 @@ const EnrollmentForm = ({ adminId, onEnrollmentSuccess }) => {
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/admin/students");
-      setStudents(response.data);
+      const response = await axios.get("http://localhost:8080/api/student/all");
+      setStudents(response.data?.data || response.data || []);
     } catch (err) {
       console.error("Error fetching students:", err);
     }
@@ -36,8 +36,8 @@ const EnrollmentForm = ({ adminId, onEnrollmentSuccess }) => {
 
   const fetchCourses = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/admin/courses");
-      setCourses(response.data);
+      const response = await axios.get("http://localhost:8080/api/course/all");
+      setCourses(response.data?.data || response.data || []);
     } catch (err) {
       console.error("Error fetching courses:", err);
     }
@@ -46,18 +46,21 @@ const EnrollmentForm = ({ adminId, onEnrollmentSuccess }) => {
   const checkEnrollmentStatus = async (studentId, courseId) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/admin/check-enrollment?studentId=${studentId}&courseId=${courseId}`
+        `http://localhost:8080/api/enrollment/check/${studentId}/${courseId}`
       );
 
-      setEnrollmentStatus(response.data);
+      const isEnrolled = response.data?.isEnrolled ?? false;
+      setEnrollmentStatus(isEnrolled);
 
-      if (response.data) {
+      if (isEnrolled) {
         setError("Student is already enrolled in this course.");
       } else {
         setError("");
       }
     } catch (err) {
       console.error("Error checking enrollment status:", err);
+      setEnrollmentStatus(false);
+      setError("");
     }
   };
 
@@ -79,7 +82,7 @@ const EnrollmentForm = ({ adminId, onEnrollmentSuccess }) => {
     setLoading(true);
 
     try {
-      await axios.post("http://localhost:8080/api/admin/enroll", {
+      await axios.post("http://localhost:8080/api/enrollment/enroll", {
         studentId: parseInt(selectedStudent, 10),
         courseId: parseInt(selectedCourse, 10),
         adminId,
@@ -94,7 +97,8 @@ const EnrollmentForm = ({ adminId, onEnrollmentSuccess }) => {
         onEnrollmentSuccess();
       }
     } catch (err) {
-      setError(err.response?.data || "Error enrolling student.");
+      const errorMsg = err.response?.data?.message || err.message || "Error enrolling student.";
+      setError(typeof errorMsg === 'string' ? errorMsg : "Error enrolling student.");
     } finally {
       setLoading(false);
     }
@@ -163,7 +167,7 @@ const EnrollmentForm = ({ adminId, onEnrollmentSuccess }) => {
               >
                 <option value="">Select Student</option>
                 {students.map((student) => (
-                  <option key={student.id} value={student.id}>
+                  <option key={student.studentId || student.id} value={student.studentId || student.id}>
                     {student.name}
                   </option>
                 ))}
@@ -183,7 +187,7 @@ const EnrollmentForm = ({ adminId, onEnrollmentSuccess }) => {
               >
                 <option value="">Select Course</option>
                 {courses.map((course) => (
-                  <option key={course.id} value={course.id}>
+                  <option key={course.courseId || course.id} value={course.courseId || course.id}>
                     {course.courseName} ({course.courseCode})
                   </option>
                 ))}

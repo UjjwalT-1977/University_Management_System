@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/students";
+const API_URL = "http://localhost:8080/api/student/all";
 
 const priorityOrder = [
   "studentId",
@@ -75,7 +75,7 @@ function StudentList({ refreshKey }) {
   const fetchStudents = async () => {
     try {
       const response = await axios.get(API_URL);
-      setStudents(response.data);
+      setStudents(response.data?.data || response.data || []);
       setError("");
     } catch (err) {
       console.error("Error fetching students:", err);
@@ -110,7 +110,7 @@ function StudentList({ refreshKey }) {
   const handleSaveClick = async () => {
     try {
       const studentId = getStudentId(editedStudent);
-      await axios.put(`${API_URL}/${studentId}`, editedStudent);
+      await axios.put(`http://localhost:8080/api/student/update/${studentId}`, editedStudent);
       setEditingId(null);
       setEditedStudent({});
       setSuccessMessage("Student updated successfully.");
@@ -133,7 +133,7 @@ function StudentList({ refreshKey }) {
     }
 
     try {
-      await axios.delete(`${API_URL}/${studentId}`);
+      await axios.delete(`http://localhost:8080/api/student/delete/${studentId}`);
       setStudents((prev) =>
         prev.filter((student) => getStudentId(student) !== studentId)
       );
